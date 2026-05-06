@@ -1,0 +1,22 @@
+recipe,label,skill
+Scrambled Eggs,A,beginner
+Grilled Cheese Sandwich,A,beginner
+Avocado Toast,A,beginner
+Fried Rice,A,intermediate
+Pasta with Marinara Sauce,A,intermediate
+Omelette with Vegetables,A,intermediate
+Pan-Seared Salmon,A,expert
+Chicken Stir Fry,B,beginner
+Beef Tacos,B,beginner
+Spaghetti Bolognese,B,beginner
+Mushroom Risotto,B,intermediate
+Thai Green Curry,B,intermediate
+Homemade Pizza,B,intermediate
+Chicken Piccata,B,expert
+Duck Confit,B,expert
+Beef Wellington,C,beginner
+Homemade Croissants,C,intermediate
+Chicken Tikka Masala,C,intermediate
+Bouillabaisse,C,expert
+French Onion Soup,C,expert
+Beef Bourguignon,C,expert
