@@ -1,0 +1,10 @@
+.sessions/
+.pytest_cache
+
+.venv
+__pycache__
+
+
+tmp.txt
+
+chroma_store
