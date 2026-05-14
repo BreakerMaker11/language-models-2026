@@ -2,7 +2,7 @@
 
 *Source: https://www.culinaryartsswitzerland.com/en/news/cooking-techniques/*
 *Curated for LLM recipe-domain applications — techniques relevant to
-skill-sensitive classification (weeks 4–6 of the Applied ML course).*
+skill-sensitive classification (weeks 4–6 of the Foundations of Language Models course).*
 
 ---
 

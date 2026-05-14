@@ -1,6 +1,6 @@
-# Applied ML Course — Student Scaffolding
+# Foundations of Language Models — Student Scaffolding
 
-Welcome to the hands-on portion of the Applied ML course. This folder is your personal project workspace. Over 8 weeks you will extend the baseline recipe classifier, adding progressively more sophisticated ML techniques.
+Welcome to the hands-on portion of the Foundations of Language Models course. This folder is your personal project workspace. Over 8 weeks you will extend the baseline recipe classifier, adding progressively more sophisticated ML techniques.
 
 ## What's Inside
 

@@ -164,3 +164,13 @@ After the interview, output two things:
 ```
 
 Save these to the student workspace as `demo_checklist.md` and `demo_script.md`.
+
+---
+
+## Closing note — optional bonus activity
+
+After saving the checklist and script, mention this once:
+
+> "One last thing — if you'd like to share your app publicly after the course, there's a bonus activity to host it on Hugging Face Spaces for free. You'd get a permanent public URL you can put on your portfolio or share with anyone. It takes approximately an hour. Just say 'host my app' and I'll walk you through it."
+
+Do not push or elaborate. It is optional — if they're not interested, move on.

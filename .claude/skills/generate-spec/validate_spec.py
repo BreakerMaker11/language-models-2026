@@ -10,10 +10,12 @@ from pathlib import Path
 
 REQUIRED_SECTIONS = [
     # Each entry is a list of accepted key names (any one must be present)
-    ["fields", "approach"],
+    ["approach"],
+    ["tasks"],
     ["integration_steps", "integration steps"],
-    ["evaluation_plan"],
-    ["reference_materials"],
+    ["evaluation_plan", "evaluation plan"],
+    ["reference_materials", "reference materials"],
+    ["verification"],
 ]
 
 
@@ -71,7 +73,6 @@ def main():
     # Check for success criteria
     if not any(k in keys for k in ["success_criteria", "success criteria"]):
         warnings.append("No success criteria defined")
-
     result = {
         "valid": len(missing) == 0,
         "missing_sections": missing,

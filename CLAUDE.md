@@ -1,6 +1,6 @@
-# Applied ML Course — Student Project
+# Foundations of Language Models — Student Project
 
-This is the student workspace for the 8-week Applied ML course. You are building and extending a recipe time classifier across the course.
+This is the student workspace for the 8-week Foundations of Language Models course. You are building and extending a recipe time classifier across the course.
 
 ## Essential Reading
 
@@ -11,11 +11,11 @@ Before making any changes, read these files in order:
 
 ## Project Summary
 
-**Goal**: A repository for students taking the course to start in 
+**Goal**: A repository for students taking the course to build and extend a recipe time classifier over 8 weeks.
 **Technology**: Python + Ollama (local LLM) + uv (package manager).
 
 **Key files**:
-- `
+- `src/baseline_recipe_classifier/` — the classifier package you build and extend.
 - `data/All_Recipe_Web_Scraping_Dataset_Labeled.csv` — 13,057 labeled recipes.
 
 ## Working With This Project

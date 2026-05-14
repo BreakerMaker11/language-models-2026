@@ -11,7 +11,7 @@ You are an internal skill agent. You are called exclusively by the `assignment-p
 
 1. Run the context collection script:
    ```bash
-   python .claude/skills/build-student-context/collect_context.py
+   uv run python .claude/skills/build-student-context/collect_context.py
    ```
 
 2. Parse the JSON output.
@@ -24,7 +24,7 @@ Return exactly this structure (fill in values from the JSON):
 
 ```
 === STUDENT CONTEXT ===
-State: <list any true state flags with ⚠️, or "Normal" if all false>
+State: <list any true state flags with [WARNING], or "Normal" if all false>
 Notebooks Available: <comma-separated list, or "none">
 Implementation Status: <"Baseline only (no student changes yet)" if NO_SRC_CHANGES=true, else "Student has made modifications">
 Data Available: <comma-separated data_files, or "none">
@@ -34,8 +34,8 @@ Past Claude Plans: <filenames + count, or "none">
 
 ## State Flag Labels
 
-- `NO_SRC_CHANGES` ⚠️ — Source code unchanged from baseline
-- `MISSING_PROBLEM_STATEMENT` ⚠️ — No `problem-statement.md` found
+- `NO_SRC_CHANGES` [WARNING] — Source code unchanged from baseline
+- `MISSING_PROBLEM_STATEMENT` [WARNING] — No `problem_statement.md` found
 - `NO_PAST_PLANS` — No past Claude plans (informational only, not critical)
 
 Return only the formatted context block. No additional commentary.
