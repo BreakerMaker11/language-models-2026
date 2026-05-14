@@ -8,7 +8,7 @@ Two cells reference a diagram that is not present:
 
 | Notebook | Cell ID | Text referencing the missing image |
 |---|---|---|
-| `week1_introducton_to_llms.ipynb` | `b1bf5add` | "In the diagram below you can see a visual representation of what happens under the hood when we inference over *gemma2:2b*..." |
+| `week1_introduction_to_llms.ipynb` | `b1bf5add` | "In the diagram below you can see a visual representation of what happens under the hood when we inference over *gemma2:2b*..." |
 | `week7_multimodal_models.ipynb` | `outro-audio` | "The diagram below shows the full path from raw audio to transformer input, the two main approaches to audio encoding..." |
 
 ---

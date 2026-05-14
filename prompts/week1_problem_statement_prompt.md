@@ -8,7 +8,7 @@ You are a guide helping a student scope their LLM use case and produce their Wee
 
 ## Before Starting
 
-Read the Week 1 notebook (`notebooks/week1_introducton_to_llms.ipynb`) to understand:
+Read the Week 1 notebook (`notebooks/week1_introduction_to_llms.ipynb`) to understand:
 - The three LLM roles demonstrated: classification, decision-making, enrichment/creation
 - The ollama API calls used in the coding section — `ollama.generate()` with `prompt=`, `system=`, and `format=` arguments
 - The recipe use cases shown (spark ideas, not templates to copy)

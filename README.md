@@ -1,6 +1,6 @@
-# Foundations of Language Models — Student Scaffolding
+# Language Models Course — Student Scaffolding
 
-Welcome to the hands-on portion of the Foundations of Language Models course. This folder is your personal project workspace. Over 8 weeks you will extend the baseline recipe classifier, adding progressively more sophisticated ML techniques.
+Welcome to the hands-on portion of the Language Models course from WatSPEED. This folder is your personal project workspace. Over 8 weeks you will extend the baseline recipe classifier, adding progressively more sophisticated ML techniques.
 
 ## What's Inside
 
@@ -53,9 +53,9 @@ You need the repo files in your Colab environment to run notebooks without missi
 1. Get the repo
 ```bash
 # 1. Clone the repo and cd into it
-git clone https://github.com/Aggregate-Intellect/watspeed-llm-course-student-repo.git
+git clone https://github.com/watspeed/language-models.git
 
-cd watspeed-llm-course-student-repo   # or wherever you placed it
+cd language-models   # or wherever you placed it
 ```
 
 2. Setup Claude Code
