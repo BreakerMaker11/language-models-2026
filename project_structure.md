@@ -57,7 +57,7 @@ The notebooks are educational — they show patterns and techniques. They are no
 
 ### `prompts/`
 
-Placeholder folder for personalization prompt outputs. After each week's personalization interview, save the resulting YAML spec here (e.g., `week3_specs.yaml`). Claude Code agents will read these specs when implementing new features.
+Contains the weekly personalization prompt files (e.g., `week1_problem_statement_prompt.md`). These are instructor-provided interview questions that guide your design decisions. The generated YAML specs are saved to `specs/`, not here.
 
 ### `.claude/skills/`
 
@@ -89,6 +89,6 @@ Template for environment variables. Copy to `.env` and fill in your API key if y
 
 1. **`src/` layout** keeps the package importable and isolates source code from data and config.
 2. **Separate `data/` and `notebooks/`** allow you to swap datasets and receive new notebooks each week without merge conflicts.
-3. **`prompts/`** creates a clear boundary between your design decisions and the implementation — the AI agent reads your spec but doesn't write to it.
+3. **`specs/`** creates a clear boundary between your design decisions and the implementation — the AI agent reads your spec but doesn't write to it.
 4. **`.claude/agents/`** makes environment debugging self-service — students don't need to describe their environment; the agent inspects it directly.
 5. **`pyproject.toml` at the root** (not inside `src/`) means a single `uv sync` from the project root installs everything, matching the standard Python project convention.
