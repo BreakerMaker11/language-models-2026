@@ -68,6 +68,12 @@ GITHUB_PAT=<paste-your-token-here>
 
 Do not proceed until confirmed.
 
+Once all four checks pass, run silently:
+```bash
+gh auth setup-git
+```
+This wires git to use gh for credentials — no manual token handling needed in Phase 3.
+
 ---
 
 ## Phase 1 — Identify tokens
@@ -125,27 +131,38 @@ If no differences found → proceed directly to Phase 3.
 
 ## Phase 3 — Fetch, pull, and push
 
-**Fetch from upstream** (never embed the token in the URL):
+Ask the participant which auth method they'd like to use:
+
+> "How would you like to authenticate git operations?
+> **A)** Use gh (already logged in — simplest)
+> **B)** Use a Personal Access Token from `.env` (more control, useful if you have separate tokens per repo)"
+
+**Option A — gh auth (default):**
+```bash
+gh auth setup-git
+git fetch upstream
+git branch --set-upstream-to=upstream/main main
+git pull --no-rebase
+git push origin main
+```
+
+**Option B — PAT via .env** (never embed the token in the URL):
 ```bash
 cat > /tmp/git-cred-helper.sh << 'EOF'
 #!/bin/bash
 source <absolute-path-to-.env>
 echo "username=x"
-echo "password=$<UPSTREAM_TOKEN_VAR>"
+echo "password=$<TOKEN_VAR>"
 EOF
 chmod +x /tmp/git-cred-helper.sh
 git -c "credential.helper=" -c "credential.helper=/tmp/git-cred-helper.sh" fetch upstream
-rm /tmp/git-cred-helper.sh
-```
-
-**Set tracking and pull:**
-```bash
 git branch --set-upstream-to=upstream/main main
 git -c "credential.helper=" -c "credential.helper=/tmp/git-cred-helper.sh" pull --no-rebase
+git -c "credential.helper=" -c "credential.helper=/tmp/git-cred-helper.sh" push origin main
 rm /tmp/git-cred-helper.sh
 ```
 
-**If merge conflicts arise:**
+**If merge conflicts arise (either option):**
 1. `git diff --name-only --diff-filter=U` — show conflicted files
 2. For each file ask: Keep yours / Keep upstream's / Merge manually
    - Keep yours: `git checkout --ours -- <file> && git add <file>`
@@ -154,12 +171,43 @@ rm /tmp/git-cred-helper.sh
 3. `git commit --no-edit`
 4. For `notebooks/` and `data/`, keeping upstream's version is usually right
 
-**Push to private origin:**
+Confirm: how many commits were pulled and that origin is now up to date.
+
+---
+
+## Auth Fallback — if fetch or push fails with 401/403
+
+If git operations fail with an auth error, offer the participant the other option:
+
+> "Git couldn't authenticate. Would you like to:
+> **A)** Fix gh authentication — re-run `gh auth login` then `gh auth setup-git`
+> **B)** Switch to a Personal Access Token stored in `.env`"
+
+**Option A — Fix gh auth:**
 ```bash
+gh auth login
+gh auth setup-git
+```
+Then retry the failed git command.
+
+**Option B — PAT via .env** (never embed the token in the URL):
+```bash
+cat > /tmp/git-cred-helper.sh << 'EOF'
+#!/bin/bash
+source <absolute-path-to-.env>
+echo "username=x"
+echo "password=$<TOKEN_VAR>"
+EOF
+chmod +x /tmp/git-cred-helper.sh
+git -c "credential.helper=" -c "credential.helper=/tmp/git-cred-helper.sh" fetch upstream
+git -c "credential.helper=" -c "credential.helper=/tmp/git-cred-helper.sh" pull --no-rebase
 git push origin main
+rm /tmp/git-cred-helper.sh
 ```
 
-Confirm: how many commits were pulled and that origin is now up to date.
+If `.env` has no token yet, guide them through the PAT setup in Phase 0d first.
+
+Resume from the failed step once fixed — do not restart the whole flow.
 
 ---
 
@@ -167,13 +215,11 @@ Confirm: how many commits were pulled and that origin is now up to date.
 
 | Symptom | Fix |
 |---|---|
-| `401` / `403` / `Bad credentials` on fetch | Upstream token expired or missing `repo` scope — regenerate on GitHub |
-| `401` / `403` on push | Origin token expired or missing `repo` scope |
+| `401` / `403` on fetch or push | gh token expired — re-run `gh auth login`, or switch to PAT fallback |
 | `Repository not found` on push | Repo deleted — recreate with `gh repo create` |
 | SSO error | Authorise the token for the org under GitHub SSO settings |
 | `gh: command not found` | `brew install gh` (Mac) or https://cli.github.com |
-| `gh auth login` fails | Token may lack scopes — generate a new one with `repo` scope |
 | `Unable to add remote "origin"` | Origin already exists — skip `--remote` flag and push directly |
-| Fine-grained token 403 on fetch | Switch to classic token with `repo` scope (Option B in Phase 0) |
+| Fine-grained PAT 403 on fetch | Switch to classic token with `repo` scope (Option B in Phase 0d) |
 
-For auth errors: tell the participant which token variable failed (not its value), what to fix, and resume from the failed step — do not restart the whole flow.
+For auth errors: tell the participant which step failed, offer Option A/B above, and resume from the failed step.
