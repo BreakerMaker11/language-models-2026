@@ -50,6 +50,55 @@ Run `git remote -v` and match against the known course repo: `github.com/watspee
 
 ---
 
+## Phase 2.5 — Preview changes before pulling
+
+After fetching, before pulling, always run a pre-pull diff so the participant can see exactly what upstream changed in each file.
+
+**Identify changed files:**
+```bash
+git diff --name-only upstream/main..HEAD
+git diff --name-only HEAD..upstream/main
+```
+
+For each file that differs, run:
+```bash
+git diff HEAD upstream/main -- <filename>
+```
+
+**For notebooks (`.ipynb`)** — the raw JSON diff is noisy. Filter to source cells only:
+```bash
+git diff HEAD upstream/main -- <notebook> | grep '^[+-]' | grep -v '^---\|^+++\|output_type\|execution_count\|metadata\|colab\|^\s*[+-]\s*"id"'
+```
+
+Present each meaningful change clearly to the participant:
+
+> "I found differences in `<filename>`. Here's what upstream changed:
+>
+> **Change 1** — `<brief description, e.g. spelling fix>`
+> - Yours: `vegeteraion`
+> - Upstream: `vegetarian`
+>
+> **Change 2** — `<brief description, e.g. code cell updated>`
+> - Yours: *(show their local version)*
+> - Upstream: *(show upstream's version)*
+>
+> For each change, would you like to:
+> - **Keep yours** — leave your local version as-is
+> - **Take upstream's** — apply the upstream change
+>
+> You can decide separately for each change."
+
+Wait for the participant's decision on each change before proceeding.
+
+**Applying per-change decisions:**
+- If **all changes** → take upstream's: pull normally (`git pull --no-rebase`), conflicts will auto-resolve in upstream's favour using `git checkout --theirs`
+- If **all changes** → keep yours: pull then `git checkout --ours -- <file> && git add <file>`
+- If **mixed decisions** → pull, then manually apply or revert specific changes using `git checkout --theirs -- <file>` or `git checkout --ours -- <file>` and commit
+
+If no differences found → proceed directly to Phase 3, nothing to preview.
+
+---
+
 ## Phase 3 — Fetch, pull, and push
 
 **Fetch from upstream** (never embed the token in the URL — use a temporary credential helper):
