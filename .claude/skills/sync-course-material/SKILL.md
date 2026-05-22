@@ -1,6 +1,6 @@
 ---
 name: sync-course-material
-description: Set up and sync a participant's private repo with the upstream course repo. TRIGGER when participant says "sync course material", "sync upstream", "sync upstream repo", "pull latest", "set up my repo", or "get course updates".
+description: Set up and sync a participant's private repo with the upstream course repo. TRIGGER when participant says "sync course material", "sync upstream", "sync upstream repo", "pull latest", or "get course updates".
 allowed-tools: [Bash, Read, Glob, Grep]
 model: sonnet
 ---
