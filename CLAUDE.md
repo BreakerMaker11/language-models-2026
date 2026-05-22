@@ -39,7 +39,7 @@ uv sync
 
 Each week you will:
 1. Receive a Jupyter notebook (place it in `notebooks/`).
-2. Run the personalization prompt and save the YAML spec to `prompts/`.
+2. Run the personalization prompt and save the YAML spec to `specs/`.
 3. Ask Claude Code to implement the spec by extending `src/baseline_recipe_classifier/`.
 
 When implementing: adapt patterns from the notebook to the spec — do not copy notebook code directly.
