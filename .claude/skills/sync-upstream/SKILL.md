@@ -65,12 +65,41 @@ For each file that differs, run:
 git diff HEAD upstream/main -- <filename>
 ```
 
-**For notebooks (`.ipynb`)** — the raw JSON diff is noisy. Filter to source cells only:
+**For notebooks (`.ipynb`)** — never use raw git diff (too noisy). Always use this Python script to compare source cells directly, which catches all differences including partial changes like spelling fixes buried inside large cells:
+
 ```bash
-git diff HEAD upstream/main -- <notebook> | grep '^[+-]' | grep -v '^---\|^+++\|output_type\|execution_count\|metadata\|colab\|^\s*[+-]\s*"id"'
+python3 -c "
+import json, subprocess, difflib
+
+upstream_raw = subprocess.run(
+    ['git', 'show', 'upstream/main:<notebook-path>'],
+    capture_output=True, text=True
+).stdout
+local_raw = open('<notebook-path>').read()
+
+up_cells = json.loads(upstream_raw)['cells']
+lo_cells = json.loads(local_raw)['cells']
+
+changes = []
+for i, (u, l) in enumerate(zip(up_cells, lo_cells)):
+    u_src = ''.join(u.get('source', []))
+    l_src = ''.join(l.get('source', []))
+    if u_src != l_src:
+        diff = list(difflib.unified_diff(
+            l_src.splitlines(), u_src.splitlines(),
+            lineterm='', n=1
+        ))
+        changes.append((i, l_src, u_src, diff))
+
+print(f'Found {len(changes)} changed cell(s):')
+for idx, local_src, up_src, diff in changes:
+    print(f'\n=== Cell {idx} ===')
+    for line in diff[2:]:  # skip unified diff header
+        print(line)
+"
 ```
 
-Present each meaningful change clearly to the participant:
+Read through all detected changes carefully and present each meaningful difference clearly to the participant:
 
 > "I found differences in `<filename>`. Here's what upstream changed:
 >
