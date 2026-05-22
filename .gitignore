@@ -30,3 +30,4 @@ finetuning/finetune_data.jsonl
 
 # Claude Code local state
 .claude/hooks/state/
+memory/
