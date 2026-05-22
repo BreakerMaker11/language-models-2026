@@ -13,43 +13,15 @@ Read `references/details.md` for the notebook diff script and error reference.
 
 ---
 
-## Phase 1 — Collect tokens
+## Phase 1 — Identify tokens
 
-Tokens are entered directly in the Claude Code prompt using `!` to run in the same shell session. Nothing is written to disk — variables live only for this session.
+Scan `.env` for all variables whose name contains `GITHUB` and either `TOKEN` or `PAT`. Show the participant the **variable names only** — never the values.
 
-Ask the participant to type the following **exactly as shown** into the Claude Code message box and press Enter:
+- If **one token found** → use it for both upstream fetch and origin push. Confirm with the participant before proceeding.
+- If **two or more found** → ask:
+  > "I found these GitHub token variables: [NAME_A, NAME_B]. Which one is for the upstream course repo, and which is for your private repo?"
 
-> "To set your upstream token, type this into the chat box and press Enter — your token will be hidden as you paste it:
-> ```
-> ! read -s -p "Paste upstream token: " UPSTREAM_TOKEN && echo "upstream token set"
-> ```
-> When you see the prompt, paste your upstream course token and press Enter. You should see `upstream token set` confirming it worked."
-
-Then ask:
-
-> "Do you have a separate token for your private GitHub repo, or should I use the same one for both?"
-
-- Same → the skill sets `ORIGIN_TOKEN` from `UPSTREAM_TOKEN` internally.
-- Separate → ask them to run:
-  > ```
-  > ! read -s -p "Paste private repo token: " ORIGIN_TOKEN && echo "origin token set"
-  > ```
-
-**Verify upstream token:**
-```bash
-curl -s -o /dev/null -w "%{http_code}" \
-  -H "Authorization: Bearer $UPSTREAM_TOKEN" \
-  https://api.github.com/repos/watspeed/language-models
-```
-- `200` → valid, proceed.
-- `401` / `404` → upstream token is invalid or lacks `repo` scope — ask them to re-run the `!read` command with the correct token.
-
-**Verify origin token** (if different):
-```bash
-curl -s -H "Authorization: Bearer $ORIGIN_TOKEN" https://api.github.com/user | python3 -c "import sys,json; print(json.load(sys.stdin).get('login','error'))"
-```
-- Returns a GitHub username → valid, proceed.
-- Returns `error` or empty → token is invalid — ask them to re-run the `!read` command.
+Wait for their answer before proceeding.
 
 ---
 
@@ -60,21 +32,21 @@ Run `git remote -v` and match against the known course repo: `github.com/watspee
 **Scenario A — Fresh clone** (`origin` points to watspeed):
 1. `git remote rename origin upstream`
 2. `git remote set-url --push upstream DISABLED`
-3. Authenticate gh CLI: `echo "$ORIGIN_TOKEN" | gh auth login --with-token`
+3. Authenticate gh CLI with the origin token: `grep '^<ORIGIN_TOKEN_VAR>=' .env | cut -d'=' -f2 | gh auth login --with-token`
 4. `gh repo create language-models --private --source=. --remote=origin --push`
 
 **Scenario B — Already set up** (`upstream` → watspeed, `origin` → participant's repo):
-- Verify the remote repo exists: `echo "$ORIGIN_TOKEN" | gh auth login --with-token && gh repo view --json name 2>&1`
+- Verify the remote repo exists: `gh repo view --json name 2>&1`
 - If OK → proceed to Phase 3.
 - If not found or error → ask:
   > "Your origin remote is configured but the GitHub repo doesn't seem to exist. Would you like me to recreate it?"
-  - Yes → `gh repo create language-models --private --source=. --remote=origin --push`
+  - Yes → authenticate gh CLI, then `gh repo create language-models --private --source=. --remote=origin --push`
   - No → proceed to Phase 3, skip the push at the end.
 
 **Scenario C — Upstream only, no origin** (`upstream` → watspeed, no `origin`):
 - Ask:
   > "You don't have a private remote repo set up yet. Would you like me to create one on GitHub, or just sync the latest course updates locally?"
-  - Create one → `echo "$ORIGIN_TOKEN" | gh auth login --with-token && gh repo create language-models --private --source=. --remote=origin --push`
+  - Create one → authenticate gh CLI, then `gh repo create language-models --private --source=. --remote=origin --push`
   - Just sync locally → proceed to Phase 3, skip the push at the end.
 
 **Scenario D — Unclear state**:
@@ -106,8 +78,9 @@ If no differences found → proceed directly to Phase 3.
 ```bash
 cat > /tmp/git-cred-helper.sh << 'EOF'
 #!/bin/bash
+source <absolute-path-to-.env>
 echo "username=x"
-echo "password=$UPSTREAM_TOKEN"
+echo "password=$<UPSTREAM_TOKEN_VAR>"
 EOF
 chmod +x /tmp/git-cred-helper.sh
 git -c "credential.helper=" -c "credential.helper=/tmp/git-cred-helper.sh" fetch upstream
@@ -117,12 +90,6 @@ rm /tmp/git-cred-helper.sh
 **Set tracking and pull:**
 ```bash
 git branch --set-upstream-to=upstream/main main
-cat > /tmp/git-cred-helper.sh << 'EOF'
-#!/bin/bash
-echo "username=x"
-echo "password=$UPSTREAM_TOKEN"
-EOF
-chmod +x /tmp/git-cred-helper.sh
 git -c "credential.helper=" -c "credential.helper=/tmp/git-cred-helper.sh" pull --no-rebase
 rm /tmp/git-cred-helper.sh
 ```
