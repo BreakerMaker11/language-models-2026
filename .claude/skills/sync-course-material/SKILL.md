@@ -44,26 +44,38 @@ gh auth setup-git
 
 ## Phase 1 — Detect and configure remotes
 
-Run `git remote -v` and match against the known course repo: `github.com/watspeed/language-models`.
+Run these two checks first:
+```bash
+git remote get-url upstream 2>/dev/null || echo "NO_UPSTREAM"
+git remote get-url origin 2>/dev/null || echo "NO_ORIGIN"
+```
 
-**Scenario A — Fresh clone** (`origin` points to watspeed):
+Then handle based on what's missing:
+
+**Both missing** — no remotes at all:
+1. `git remote add upstream https://github.com/watspeed/language-models.git`
+2. `git remote set-url --push upstream DISABLED`
+3. Then handle NO_ORIGIN below
+
+**NO_UPSTREAM only** (`origin` exists but points to watspeed — fresh clone):
 1. `git remote rename origin upstream`
 2. `git remote set-url --push upstream DISABLED`
-3. `gh repo create language-models --private --source=. --remote=origin --push`
+3. Then handle NO_ORIGIN below
 
-**Scenario B — Already set up** (`upstream` → watspeed, `origin` → participant's repo):
-- Run `gh repo view --json name 2>&1`
-- OK → proceed to Phase 2
-- Not found → ask: "Your origin is configured but the GitHub repo doesn't seem to exist. Recreate it?"
-  - Yes → `gh repo create language-models --private --source=. --remote=origin --push`
-  - No → proceed to Phase 2, skip the push at the end
-
-**Scenario C — Upstream only, no origin** (`upstream` → watspeed, no `origin`):
+**NO_ORIGIN only** (`upstream` → watspeed, no private repo yet):
 - Ask: "You don't have a private remote yet. Create one on GitHub, or just sync locally?"
   - Create → `gh repo create language-models --private --source=. --remote=origin --push`
-  - Just sync → proceed to Phase 2, skip the push at the end
+  - Just sync → proceed to Phase 2, **set a note to skip push in Phase 3**
 
-**Scenario D — Unclear state**: Show what remotes exist and ask the participant to clarify.
+**Both present** (`upstream` → watspeed, `origin` → participant's repo):
+- Run `gh repo view --json name 2>&1`
+- OK → proceed to Phase 2
+- Not found → ask: "Your origin remote is configured but the GitHub repo doesn't seem to exist. Recreate it?"
+  - Yes → `gh repo create language-models --private --source=. --remote=origin --push`
+  - No → proceed to Phase 2, **set a note to skip push in Phase 3**
+
+**Unclear state** (`origin` doesn't point to watspeed and `upstream` is missing or points elsewhere):
+Show what remotes exist and ask the participant to clarify before proceeding.
 
 ---
 
@@ -146,7 +158,14 @@ Add to `.env`: `GITHUB_PAT=<your-token>`
 3. `git commit --no-edit`
 4. For `notebooks/` and `data/`, keeping upstream's version is usually right
 
-Confirm: how many commits were pulled and that origin is now up to date.
+**Before pushing, verify origin exists:**
+```bash
+git remote get-url origin 2>/dev/null || echo "NO_ORIGIN"
+```
+- Origin exists → push normally
+- `NO_ORIGIN` → skip push, tell participant: "Sync complete — your local repo is up to date. No private remote is configured so nothing was pushed."
+
+Confirm: how many commits were pulled and whether origin was pushed.
 
 ---
 
