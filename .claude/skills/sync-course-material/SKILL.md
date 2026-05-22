@@ -112,7 +112,10 @@ git push origin main
 
 **Option B — PAT via .env:**
 
-First, scan `.env` for token variables (name contains `GITHUB` + `TOKEN` or `PAT`). Show **variable names only — never values**.
+First, scan `.env` for token variables — output variable names only, never values:
+```bash
+grep -E "(GITHUB.*(TOKEN|PAT)|PAT.*GITHUB|TOKEN.*GITHUB)" .env | cut -d= -f1
+```
 - One found → use it for both fetch and push
 - Two or more found → ask: "I found [NAME_A, NAME_B]. Which is for the upstream course repo, and which is for your private repo?"
 
