@@ -15,37 +15,41 @@ Read `references/details.md` for the notebook diff script and error reference.
 
 ## Phase 1 — Collect tokens
 
-Ask the participant to paste their tokens using silent input (nothing is written to disk — tokens live only in the shell session):
+Tokens are entered directly in the Claude Code prompt using `!` to run in the same shell session. Nothing is written to disk — variables live only for this session.
 
-```bash
-read -s -p "Paste your upstream course token (input hidden): " UPSTREAM_TOKEN && echo ""
-```
+Ask the participant to type the following **exactly as shown** into the Claude Code message box and press Enter:
 
-Then ask if they have a separate token for their private repo:
+> "To set your upstream token, type this into the chat box and press Enter — your token will be hidden as you paste it:
+> ```
+> ! read -s -p "Paste upstream token: " UPSTREAM_TOKEN && echo "upstream token set"
+> ```
+> When you see the prompt, paste your upstream course token and press Enter. You should see `upstream token set` confirming it worked."
 
-> "Do you have a separate token for your private GitHub repo, or should I use the same one?"
+Then ask:
 
-- Same token → set `ORIGIN_TOKEN=$UPSTREAM_TOKEN`
-- Separate → collect it:
-  ```bash
-  read -s -p "Paste your private repo token (input hidden): " ORIGIN_TOKEN && echo ""
-  ```
+> "Do you have a separate token for your private GitHub repo, or should I use the same one for both?"
 
-**Verify upstream token** works before proceeding:
+- Same → the skill sets `ORIGIN_TOKEN` from `UPSTREAM_TOKEN` internally.
+- Separate → ask them to run:
+  > ```
+  > ! read -s -p "Paste private repo token: " ORIGIN_TOKEN && echo "origin token set"
+  > ```
+
+**Verify upstream token:**
 ```bash
 curl -s -o /dev/null -w "%{http_code}" \
   -H "Authorization: Bearer $UPSTREAM_TOKEN" \
   https://api.github.com/repos/watspeed/language-models
 ```
 - `200` → valid, proceed.
-- `401` / `404` → tell the participant the upstream token is invalid or lacks `repo` scope, ask them to re-paste.
+- `401` / `404` → upstream token is invalid or lacks `repo` scope — ask them to re-run the `!read` command with the correct token.
 
-**Verify origin token** (if different) by checking their username resolves:
+**Verify origin token** (if different):
 ```bash
 curl -s -H "Authorization: Bearer $ORIGIN_TOKEN" https://api.github.com/user | python3 -c "import sys,json; print(json.load(sys.stdin).get('login','error'))"
 ```
-- Returns a username → valid, proceed.
-- Returns `error` or empty → token is invalid, ask them to re-paste.
+- Returns a GitHub username → valid, proceed.
+- Returns `error` or empty → token is invalid — ask them to re-run the `!read` command.
 
 ---
 
