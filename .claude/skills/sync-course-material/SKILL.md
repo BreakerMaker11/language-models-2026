@@ -1,15 +1,88 @@
 ---
-name: sync-upstream
-description: Set up and sync a participant's private repo with the upstream course repo. TRIGGER when participant says "sync upstream", "sync upstream repo", "pull latest", "set up my repo", or "get course updates".
+name: sync-course-material
+description: Set up and sync a participant's private repo with the upstream course repo. TRIGGER when participant says "sync course material", "sync upstream", "sync upstream repo", "pull latest", "set up my repo", or "get course updates".
 allowed-tools: [Bash, Read, Glob, Grep]
 model: sonnet
 ---
 
-You are helping a participant wire up their local clone of the course repo so they can pull course updates from the upstream source and push their own work to a private GitHub repo. Work through three phases in order — wait for confirmation before each transition.
+You are helping a participant wire up their local clone of the course repo so they can pull course updates from the upstream source and push their own work to a private GitHub repo.
+
+This skill is designed to run quickly on repeat visits. Early phases are silent pass-through checks — only stop and ask if something needs fixing.
 
 Read `references/details.md` for the notebook diff script and error reference.
 
 **Your local work is safe.** Pulling from upstream only merges new course content into your local branch. If conflicts arise, you will be asked how to handle each file individually before anything is overwritten.
+
+---
+
+## Phase 0 — Prerequisites check
+
+Run all four checks in order. For each one: if it passes, move on silently. If it fails, help fix it and wait for confirmation before continuing.
+
+**Check 1 — git installed**
+```bash
+git --version
+```
+- Pass → continue
+- Fail → "git is not installed. Download it from https://git-scm.com/downloads, install it, then let me know when done."
+
+**Check 2 — gh installed**
+```bash
+gh --version
+```
+- Pass → continue
+- Fail → "The GitHub CLI (gh) is not installed. Download it from https://cli.github.com, install it, then let me know when done."
+
+**Check 3 — gh authenticated**
+```bash
+gh auth status
+```
+- Pass → continue
+- Fail → "gh is not authenticated with GitHub. Run `gh auth login` in your terminal and follow the prompts (choose HTTPS and paste a browser token when asked), then let me know when done."
+
+**Check 4 — .env and GitHub token present**
+
+Run `ls .env 2>/dev/null` to check if `.env` exists, then scan it for variables whose name contains `GITHUB` and either `TOKEN` or `PAT`.
+
+- Pass (file exists + at least one matching variable) → continue
+- Fail (.env missing) → tell the participant:
+
+  > "I don't see a `.env` file in your project. We need one with a GitHub Personal Access Token before we can sync. Let me walk you through it."
+
+  **Generate a GitHub PAT**
+
+  GitHub offers two types. Start with fine-grained — it's more secure. Fall back to classic if you hit a 403 error during fetch.
+
+  *Option A — Fine-grained token (recommended)*
+  - Go to: `https://github.com/settings/tokens?type=beta` then click **Generate new token**
+  - Name it `language-models-sync`, set expiration to 90 days
+  - Under **Repository access**, choose **All repositories**
+  - Under **Permissions → Repository permissions**, set:
+    - **Contents** → Read and Write
+    - **Metadata** → Read-only (auto-selected)
+  - Click **Generate token** and copy it immediately — GitHub only shows it once
+
+  *Option B — Classic token (fallback)*
+  - Go to: `https://github.com/settings/tokens/new`
+  - Name it `language-models-sync`, set expiration to 90 days
+  - Under **Select scopes**, tick **`repo`** only
+  - Click **Generate token** and copy it immediately
+
+  **Create the `.env` file** in the project root:
+  ```
+  GITHUB_PAT=<paste-your-token-here>
+  ```
+  Wait for confirmation that the file is saved, then continue.
+
+- Fail (.env exists but no matching token variable) →
+
+  > "Your `.env` file exists but I don't see a GitHub token in it. Add the following line, then let me know: `GITHUB_PAT=<your-token>`"
+
+  If they don't have a token yet, guide them through the PAT steps above. Wait for confirmation, then continue.
+
+---
+
+Once all four checks pass, say: **"Everything looks good — moving on."** and proceed to Phase 1 without asking for confirmation.
 
 ---
 
