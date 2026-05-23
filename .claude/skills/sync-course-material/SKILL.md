@@ -96,19 +96,20 @@ If no differences found → proceed directly to Phase 3.
 
 ## Phase 3 — Fetch, pull, and push
 
-Ask the participant which auth method they'd like to use:
+Use `gh` auth by default — no prompt needed. Run:
 
-> "How would you like to authenticate git operations?
-> **A)** Use gh (already logged in — simplest)
-> **B)** Use a Personal Access Token from `.env` (more control, useful if you have separate tokens per repo)"
-
-**Option A — gh auth:**
 ```bash
 git fetch upstream
 git branch --set-upstream-to=upstream/main main
 git pull --no-rebase
 git push origin main
 ```
+
+If fetch or pull fails with 401/403, offer recovery options (do not restart the whole flow):
+
+> "Git couldn't authenticate. Would you like to:
+> **A)** Fix gh — re-run `gh auth login` then `gh auth setup-git`, and retry
+> **B)** Use a Personal Access Token from `.env`"
 
 **Option B — PAT via .env:**
 
@@ -172,15 +173,6 @@ Confirm: how many commits were pulled and whether origin was pushed.
 
 ---
 
-## Auth Fallback — if fetch or push fails with 401/403
-
-> "Git couldn't authenticate. Would you like to:
-> **A)** Fix gh — re-run `gh auth login` then `gh auth setup-git`
-> **B)** Switch to a PAT from `.env`"
-
-Resume from the failed step once fixed — do not restart the whole flow.
-
----
 
 ## Error Quick-Reference
 
