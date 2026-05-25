@@ -1,32 +1,16 @@
 .sessions/
 .pytest_cache
-
 .venv
 __pycache__
-
 tmp.txt
-
-# ChromaDB
-chroma_store
-retrieval/chroma_db/
 
 # Secrets
 .env
+.env.local
 
 # macOS
 .DS_Store
 **/.DS_Store
-
-# Student-generated outputs
-specs/
-demo_checklist.md
-demo_script.md
-problem_statement.md
-course_feedback_tracker.md
-
-# Fine-tuning artifacts
-finetuning/adapter/
-finetuning/finetune_data.jsonl
 
 # Claude Code local state
 .claude/hooks/state/
