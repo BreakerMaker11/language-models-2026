@@ -67,7 +67,7 @@ source .venv/bin/activate && python script.py
 
 ## Debug Skill
 
-If the environment is broken, run in claude cli:
+If the environment is broken, run in Claude Code:
 
 ```
 Use setup-debugger skill to fix the environment
