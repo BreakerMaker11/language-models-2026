@@ -28,7 +28,7 @@ See `project_structure.md` for a deeper explanation of the layout.
   - Install: <https://rclone.org/install/>
   - Configure Google Drive once: `rclone config create gdrive drive` — opens a browser for OAuth login; just click Allow
   - Token is stored at `~/.config/rclone/rclone.conf` and auto-renews; login is only needed once
-- **claude CLI** — will be needed through out the course
+- **Claude Code** — will be needed through out the course
   - Install: <https://claude.ai/code>
 
 ---
