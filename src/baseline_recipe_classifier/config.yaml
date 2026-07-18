@@ -23,3 +23,92 @@ categories:
   E:
     name: "Long Wait"
     description: "Wait time > 30 min (overnight marinate, long chill)"
+
+# ── Health Policy Brief Classifier ──────────────────────────────────────────
+health:
+  default_model: "gemma4:12b"
+  models:
+    "gemma4:12b":
+      temperature: 0.0
+      num_ctx: 8192
+      ollama_options:
+        think: false
+        num_predict: 2048  # runaway-safety cap only; individual cards spike well above median ~471
+    "gemma4:e4b":
+      temperature: 0.0
+      num_ctx: 8192
+      ollama_options:
+        think: false
+        num_predict: 600
+    "qwen3:14b":
+      temperature: 0.0
+      num_ctx: 8192
+      ollama_options:
+        num_predict: 2048
+    "qwen3:8b":
+      temperature: 0.0
+      num_ctx: 8192
+      ollama_options:
+        num_predict: 2048
+    "gemma2:2b":
+      temperature: 0.0
+      num_ctx: 8192
+      ollama_options:
+        num_predict: 10
+  dataset:
+    dev: "data/health/dev.csv"
+    train: "data/health/train.csv"
+    gold_test: "data/health/gold_test.csv"   # FROZEN — never train or tune against this
+  # Rule 2 (specific over broad) may be quoted in prompts per codebook v1.1:
+  # womens_health beats cancer for breast/cervical cancer;
+  # indigenous_health beats mental_health;
+  # childrens_health beats cancer for pediatric oncology.
+  categories:
+    public_health:
+      description: >
+        population-level health protection and preparedness:
+        pandemics, COVID measures, vaccination programs, infectious disease,
+        antimicrobial resistance, disease surveillance, health emergencies; and
+        substance use as a population crisis — opioids, overdose, toxic drug
+        supply, addiction, harm reduction, drug policy (amended v1.1).
+    pharmacare:
+      description: >
+        drugs and medical devices as products and programs:
+        coverage, pricing, shortages, approval and safety, patented medicines,
+        pharmaceutical supply, medical devices.
+    womens_health:
+      description: >
+        health of women and reproductive health: maternal
+        care, breast and cervical cancer, menopause, endometriosis, contraception,
+        midwifery.
+    mental_health:
+      description: >
+        mental illness and psychiatric care: mood and anxiety
+        disorders, depression, psychiatric and psychological services, suicide
+        prevention. Does NOT include substance use or addiction — those are
+        public_health (amended v1.1).
+    workforce:
+      description: >
+        the people who deliver care: shortages, training,
+        credential recognition, internationally trained professionals, retention,
+        burnout, scope of practice, licensure.
+    indigenous_health:
+      description: >
+        health of First Nations, Inuit and Métis Peoples:
+        access, self-determination, culturally safe care, Jordan's Principle, NIHB.
+    cancer:
+      description: >
+        cancer prevention, screening, treatment and care NOT specific
+        to women's cancers: pediatric oncology, carcinogens, oncology services,
+        general cancer care.
+    childrens_health:
+      description: >
+        health of children and youth: pediatric care,
+        neonatal health, child development, child-specific services.
+    other_none:
+      description: >
+        real health-policy content that fits no topic above, or
+        content that is not primarily about a health topic (e.g. civil-liberties
+        arguments about mandates). Do NOT force-fit; this label is information.
+        (Note: multi-topic cards are NOT other_none — they get the best-fit topic
+        under Rule 5.)

@@ -1,0 +1,84 @@
+Disagreement cards for manual codebook review
+Models: gemma4:12b  vs  qwen3:14b
+========================================================================
+
+doc_id     : hesa441_emergency_situation_facing_c_0035
+true_label : unlabeled
+gemma4:12b  : other_none
+qwen3:14b   : public_health
+
+card_text:
+From not being able to visit my own mother during the last year of her life, job loss, business restrictions, having health professionals apologize but admit to not speaking up for patients out of fear of losing there job because of union and government policy. I have no trust in our health care professionals outside of necessary and basic procedures. I feel almost every single MP failed our citizens by fearing to speak out and speak truthfully and represent our population at the risk of losing there own job or be criticized and “cancelled”. I am ashamed of our government. I feel it was an absolute failure and I have zero trust in our political systems to respect and follow our charter of rights. I cannot even fathom that there was and still is travel restrictions. The government allowed so called health professionals to make financial and business policy and allowed politicians to make health policy. I cannot describe the failure of the government in the last two years or think of a single success policy regarding the pandemic. I once was a liberal voter, that has changed and never will I vote liberal or NDP again until these MP’s take responsibility for the historic damage inflicted on our population.
+
+------------------------------------------------------------------------
+
+doc_id     : hesa441_emergency_situation_facing_c_0053
+true_label : unlabeled
+gemma4:12b  : workforce
+qwen3:14b   : other_none
+
+card_text:
+To whom it may concern, My name is Melanie and up until December 27th, 2021, I had been a long term employee of over 11 years at a Long Term Care Home north of Toronto, ON. November 10th, 2021 was my final day of employment, as myself and several other of my co-workers were informed we no longer met the requirements of employment due to personal medical choices made. I am writing this letter to reveal the devastation and hardship myself and my co-workers have had to endure since the termination of our employment. First and foremost, I would like to open up and tell you about how this termination has impacted my life personally. Since December 27th, 2021 I have had the challenging job of advancing on with life as though I had interest in continuing to live it. I have lost my career as a nurse, my business providing advanced footcare to the seniors, and also have lost my ability to financially support myself, my family and make my mortgage payments. My sense of purpose in life is now questioned daily. I took great pride in being a nurse and helping our seniors. I had devoted my life and a great deal of my time into caring for our resident’s as this is what made me happy and fulfilled my heart. I now work a minimum wage job and am falling further and further behind financially. I am 31 years old and having to restart and reevaluate my
+
+------------------------------------------------------------------------
+
+doc_id     : hesa441_emergency_situation_facing_c_0105
+true_label : public_health
+gemma4:12b  : public_health
+qwen3:14b   : pharmacare
+
+card_text:
+May 13, 2022 To Whom It May Concern: Canada suppose to be a free country. That is why so many people immigrated to Canada (ran away from communism and tyrant governments) to be able to exercise their Freedom and freedom of choice, which was given to every person on this planet by God. Everyone should be able to have a choice and not being pushed, manipulated by fear of losing their job or not being able to travel. There are documents by Pfizer that have been released on all of the adverse reactions (and there are a lot of them). Please find the time and read them. “To sell a drug or vaccine, we require pharmaceutical companies to conduct a randomized controlled trial (RCT) to show that it works to prevent serious health outcomes or death. Pfizer and Moderna haven’t done that. For adults, they only showed a reduction in symptomatic disease. One important role of public health agencies during a pandemic is to conduct seroprevalence studies to determine how many people have developed antibodies to the disease from having been infected. That way we understand how the disease has spread and how it varies geographically and among different age groups.” – Martin Kulldorff a professor at Harvard Medical School. Did Canada do that? The medical establishment used to push for evidence-based medicine as a counterweight to “alternative medicine”. Canada has a big emphasis on discrimination, so why does Canadian government discriminate those who are not vaccinated (maybe it’s based
+
+------------------------------------------------------------------------
+
+doc_id     : hesa441_emergency_situation_facing_c_0119
+true_label : unlabeled
+gemma4:12b  : other_none
+qwen3:14b   : public_health
+
+card_text:
+May 9, 2022 To the Standing Committee on Health: Let us take a moment to consider what has allowed us to reach the point of disregarding individual and human rights, especially during the recent years of bizarre restrictions, so that we can focusing on creating a promising future When one discourse and paradigm tramples over other modes of reasoning and practise especially with the perpetuation of mass fear campaigns Where following orders is more important than following one's own inner guidance on what is best for our lives and health When children are denied their innocence and healthy psychological development When we hear there is “no cure” or that something chemically synthesized is the only answer for us. When greed, power, money, and fear are the values perpetuated by governments created to keep our societies interconnected and thriving Focus creates results and collective focus can create harmony or destruction Do we see a healthy and prosperous future ahead for our people when campaigns of illusion dominate reason and truth? When governments lose the confidence of the people, it limits what we can achieve as a collective united in strength and the greater vision for our country How can we create thriving societies while honouring free will, choice, and trusting and promoting the higher values that unite us all? I firmly believe greater harmony can be achieved while honouring each individual's fundamental rights and expression by modifying the emergency pandemic restrictions that do not serve our own or the collective best
+
+------------------------------------------------------------------------
+
+doc_id     : hesa441_governments_advanced_purchas_0001
+true_label : public_health
+gemma4:12b  : pharmacare
+qwen3:14b   : public_health
+
+card_text:
+OTTAWA OFFICE | BUREAU OTTAWA [CONTACT]. Suite 1005, Ottawa, ON [CONTACT] Canada doctorswithoutborders.ca medecinssansfrontieres.ca [ORG]/Médecins Sans Frontières (MSF) Submission to the Standing Committee on Health Study: Government's Advanced Purchase Agreement for Vaccines with Medicago December 06, 2023 [ORG]/Médecins Sans Frontières (MSF) is one of the world’s leading independent emergency humanitarian medical organizations. For decades, we have witnessed people being denied treatment for neglected or deadly diseases because the medicines they need have been priced out of reach by private pharmaceutical companies or never made available in places where they live — even when those medicines were discovered using public funding, including money provided by the Government of Canada. This system cannot continue. In recent years, MSF has consistently called upon the Government of Canada to ensure that public funds are used to benefit public health over private profits. Canadians support taking action to improve access to the medicines and vaccines that our government is paying to develop. In October 2020, we wrote to then-Minister of Health, Patty Hajdu, and provided her with a copy of an MSF petition calling on the Canadian government to make the hundreds of millions of dollars of public funding it invests in medical research and development (R&D) each year conditional on recipients of those funds ensuring that the lifesaving medicines, vaccines, or other health technologies developed with it are affordable and globally accessible to patients who need them. This petition was signed by 91,206 people. To ensure that public funding, which supports research and development
+
+------------------------------------------------------------------------
+
+doc_id     : hesa441_oversight_of_medical_devices_0022
+true_label : pharmacare
+gemma4:12b  : nan
+qwen3:14b   : other_none
+
+card_text:
+Medical devices oversight committee (breast implants)] My submission on my breast implants From a dream to a hard reality! “Why didn’t God give me breasts? I don’t feel like a woman or desirable with my small breasts. I swear that one day I will end up getting a pair!” These were the thoughts that ran through my mind every day, every time I looked in the mirror when I woke up. Consultation was the first step After several years of mental torture, thinking about it , and once I was sure I was done having babies, at the age of 31, I decided to see a surgeon to eventually get breast augmentation surgery. My partner was completely against it, but I wasn’t doing this for him. I was doing this for myself, to feel better and to gain self-confidence. So, early in 2008, I met with Dr. Marc Dufresne, a plastic surgeon, at his clinic in Chicoutimi. After a quick review of my medical records, he asked me why I wanted to have breast augmentation surgery and then conducted a physical examination of my chest. He also asked me what my expectations were of the aesthetic outcome. I told him that I wanted something natural and not too big because I played a lot of sports and engaged in physical activities and I didn’t want them to become uncomfortable. I told him that I just wanted to have a chest proportional to my body type and, at the same time,
+
+------------------------------------------------------------------------
+
+doc_id     : hesa441_treatment_and_prevention_of_0002
+true_label : cancer
+gemma4:12b  : childrens_health
+qwen3:14b   : cancer
+
+card_text:
+[ORG] Brief to the House of Commons Standing Committee on Health Parliament of Canada: Cancer Prevention Among Young People Submitted by: Marie Laberge, PhD Jena Webb, PhD Sami Fettah, PhD Sabrina Gravel, PhD Joseph-Omer Dyer, PhD Sylvain Letscher, PhD Nadielda Pastor-Bédard, MSc erg. Hélène Sultan-Taïeb, PhD France Labrèche, PhD December 3, 2024 Introduction We are a team of researchers associated with the Canada Research Chair in Adolescent Work Disability Prevention led by Marie Laberge. For the past two years, we have been conducting research intended to develop a program for early prevention of occupational cancers among adolescents with low qualifications and several vulnerabilities. We are submitting this brief to encourage the government to apply the precautionary principle when making decisions related to exposure to potentially toxic materials and environments. Both external factors and lack of experience make it more difficult to limit exposure among young people, and applying the precautionary principle would protect their health. Our objective is to prevent occupational cancers early on. It is estimated that between 4% and 8% of cancers are work-related,1 but this figure is probably an underestimate due to the difficulty in establishing causal links.2 In 2011 in Canada, roughly $4.4 billion in medical care costs, lost productivity and loss of quality of life3 are attributable to occupational cancers. In 2010, research in France estimated that the cost of a particular group of cancers (lung, laryngeal, etc.) for the French government was between €960 million and €1.866 billion.4 More investment into prevention as soon
+
+------------------------------------------------------------------------
+
+doc_id     : hesa441_womens_health_0013
+true_label : womens_health
+gemma4:12b  : womens_health
+qwen3:14b   : public_health
+
+card_text:
+Alcohol use among women Reducing alcohol’s impact on women’s health Brief presented to the Standing Committee on Health House of Commons, 44th Parliament, 1st session March 14, 2024 Authors Gabrielle Desjardins, Project Lead, Alcool au féminin project, [ORG] Kim Brière-Charest, Project Manager — psychoactive substances, [ORG] This document is available in its entirety in electronic format (PDF) on the [ORG] website at: www.[ORG].org. The information contained in this document may be cited provided that the source is mentioned. © [ORG] (2024). [ORG] ([ORG]) The [ORG] ([ORG]) is an independent grassroots organization working to make sustainable health a priority. Sustainable health is based on a long-term vision that not only offers care to all, but also ensures that Quebeckers can take preventive measures to stay healthy. Our organization advises, surveys, educates and mobilizes stakeholders and makes recommendations based on evidence, expert consensus, international experience and social acceptability. [CONTACT] | [ORG].org 5455, av. de Gaspé, Suite 200 Montréal, Quebec [CONTACT] BACKGROUND In its report Alcool au féminin (Alcohol use among women), [ORG] presented a picture of alcohol use among women in Quebec, based on scientific literature, information obtained from organizations and the public, surveys, and an analysis of the alcohol industry’s marketing strategies. This brief summarizes the report’s main findings and recommendations to encourage initiatives to reduce alcohol’s impact on women’s health. MAIN FINDINGS Alcohol use among women has changed over the past few years. In 2020-2021, 79% of women in Quebec aged 15 and over drank alcohol at least once in
+
+------------------------------------------------------------------------
+
