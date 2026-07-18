@@ -1,0 +1,157 @@
+# Week 1 Introduction to LLMs - Implementation Specs
+
+approach:
+  summary: >
+    Adapt the baseline recipe classifier to classify Canadian HESA parliamentary
+    health-policy briefs into nine topic codes using zero-shot prompting with
+    codebook definitions via gemma4:12b on Ollama.
+  decisions:
+    domain_adaptation:
+      choice: Replace recipe classifier domain with HESA health-policy brief domain
+      reasoning: >
+        The student's corpus is 562 public submissions to Parliament's Standing
+        Committee on Health — structurally similar to the baseline (text in,
+        label out) but a different domain requiring different categories and prompt.
+
+    input_field:
+      choice: card_text only (title + first ~250 words, organization-masked)
+      reasoning: >
+        Organization name, study title, and filename all leak the label.
+        card_text is the only field safe to pass to the model.
+
+    prompt_strategy:
+      choice: Zero-shot with nine codebook definitions verbatim from config.yaml
+      reasoning: >
+        Definitions give eval-only classes (mental_health, indigenous_health,
+        cancer) their only path to being predicted — demonstrating the key
+        paradigm finding. Zero-shot baseline is measured first before adding
+        few-shot examples in a later week's ablation.
+
+    label_space:
+      choice: All nine codes always explicit — public_health, pharmacare,
+        womens_health, workforce, childrens_health, mental_health, cancer,
+        indigenous_health, other_none
+      reasoning: >
+        Class-space rule: never fold, merge, or drop classes. mental_health,
+        indigenous_health, and cancer have ~0 training rows but exist in gold —
+        this imbalance is a finding, not a bug.
+
+    model_and_inference:
+      choice: gemma4:12b via Ollama, temperature 0, num_ctx 8192+, format "code only"
+      reasoning: >
+        Remote Linux machine with RTX 3060 12GB runs gemma4:12b locally via
+        Ollama. Temperature 0 maximises reproducibility. Ollama enforces JSON/
+        constrained output automatically. num_ctx must be set (default 4096 is
+        too small for definitions + card text).
+
+    raw_output_logging:
+      choice: Always log raw_output alongside parsed predicted_label
+      reasoning: >
+        Models sometimes return hedged answers ("womens_health, though cancer
+        is arguable"). The raw string must be preserved to diagnose parse
+        failures and ambiguous predictions.
+
+    output_artifact:
+      choice: results/predictions_baseline_dev.csv with columns doc_id,
+        true_label, predicted_label, raw_output, method, model, timestamp
+      reasoning: >
+        Standardised CSV schema lets the eval harness (future weeks) ingest
+        any method's predictions with the same code path.
+
+tasks:
+  task_1:
+    name: Create main.py with --sample and single-card modes
+    details: |
+      File: src/baseline_recipe_classifier/main.py (or a new top-level main.py)
+
+      --sample N mode:
+        1. Load data/health/dev.csv, sample N rows with a fixed random seed.
+        2. For each row, build a prompt:
+             - System: "You are a policy document classifier. Assign exactly one
+               topic code from the list below. Return ONLY the code, nothing else."
+             - Definitions block: read categories from config.yaml, format as
+               "CODE: definition" lines.
+             - Code list: all nine codes, comma-separated, on one line.
+             - Card text: dev row's card_text value. NEVER include study title,
+               organization name, or filename.
+        3. Call ollama.generate(model="gemma4:12b", prompt=..., options={"temperature":0,"num_ctx":8192}).
+        4. Parse response: strip whitespace, lowercase, check if result is in
+           the nine valid codes. If not, log as parse_error.
+        5. Append row to results/predictions_baseline_dev.csv (create results/
+           if missing). Columns: doc_id, true_label (topic_seed), predicted_label,
+           raw_output, method="baseline_zeroshot", model="gemma4:12b", timestamp.
+        6. After all rows, print:
+             - Parse rate (% of responses that matched a valid code)
+             - Predicted label distribution (count per code, all nine shown even
+               if count=0)
+             - Weak-agreement % (predicted_label == true_label, excluding
+               parse errors from denominator)
+
+      --text "..." / --doc-id ID mode:
+        1. Accept either --text "<raw card text>" or --doc-id <id> (looks up
+           card_text from dev.csv by doc_id column).
+        2. Build and print the full prompt (same construction as above).
+        3. Call Ollama, print raw_output, then print parsed label.
+
+  task_2:
+    name: Wire category definitions from config.yaml into prompts
+    details: |
+      config.yaml already holds the nine category definitions (from CLAUDE.local.md).
+      Add a helper function read_category_definitions(config_path) that returns
+      an ordered dict of {code: definition_string}.
+      The prompt builder calls this function — definitions are never hardcoded
+      in main.py.
+
+  task_3:
+    name: Create results/ directory and CSV writer
+    details: |
+      results/ directory must be created if absent (os.makedirs exist_ok=True).
+      CSV is appended to (not overwritten) so multiple --sample runs accumulate.
+      Each run gets a fresh timestamp column value so runs can be distinguished.
+
+integration_steps:
+  - "Read category definitions from src/baseline_recipe_classifier/config.yaml
+    using the same config-loading pattern as the existing classifier."
+  - "Add main.py at the project root (or as src/baseline_recipe_classifier/main.py)
+    — call with: uv run python main.py --sample 25"
+  - "Create results/ directory at project root for output CSVs."
+  - "Ollama must be running on the remote Linux machine and reachable. If calling
+    from local machine, set OLLAMA_HOST=http://<remote-ip>:11434 before running."
+  - "gemma4:12b must be pulled on the remote: ollama pull gemma4:12b"
+
+evaluation_plan:
+  metrics:
+    - parse_rate
+    - predicted_label_distribution (all nine classes shown)
+    - weak_agreement_pct (predicted == topic_seed)
+  dataset_size: 25 (seeded sample from dev.csv, 29 rows total)
+  baseline: >
+    Weak keyword rules (topic_seed column) — the floor. Week 1 establishes
+    zero-shot performance as the first measured method above that floor.
+
+reference_materials:
+  notebook: notebooks/week1_introduction_to_llms.ipynb
+
+success_criteria:
+  minimum: >
+    --sample 25 completes without errors, produces results/predictions_baseline_dev.csv,
+    and prints parse-rate, label distribution, and weak-agreement %.
+  good: >
+    Parse rate >= 90% (model returns a valid code on almost every card);
+    at least 3 distinct topic codes appear in the 25 predictions;
+    weak-agreement >= 50% (better than random on weak labels).
+
+verification:
+  cli:
+    - "Ensure Ollama is running on remote and model is available:
+       OLLAMA_HOST=http://<host>:11434 ollama list | grep gemma4"
+    - "Run sample mode: uv run python main.py --sample 25"
+    - "Check output: cat results/predictions_baseline_dev.csv | head -6"
+    - "Verify all nine label codes appear as columns/rows in the printed
+       distribution (even if count is 0)"
+    - "Run single-card mode: uv run python main.py --doc-id <any doc_id from dev.csv>"
+    - "Confirm prompt and raw_output are printed to stdout"
+  streamlit:
+    - "Week 1 has no Streamlit component — verification is CLI only."
+    - "The Streamlit app (if present from baseline) should still launch without
+       errors: uv run streamlit run app.py"
