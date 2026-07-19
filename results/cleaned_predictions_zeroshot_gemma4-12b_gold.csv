@@ -216,10 +216,3 @@ hesa451_impact_of_immigration_policy_0012,workforce,workforce,workforce,exact,,b
 hesa451_impact_of_immigration_policy_0013,workforce,workforce,workforce,exact,,baseline_zeroshot,gemma4:12b,2026-07-18T22:33:36.189327+00:00,840,422,15217.519483,692.633161
 hesa451_impact_of_immigration_policy_0018,workforce,workforce,workforce,exact,,baseline_zeroshot,gemma4:12b,2026-07-18T23:07:19.465185+00:00,795,388,13843.658291,660.257444
 hesa451_impact_of_immigration_policy_0024,workforce,workforce,workforce,exact,,baseline_zeroshot,gemma4:12b,2026-07-18T23:07:19.465185+00:00,827,421,14825.848809,672.068532
-hesa441_canadas_health_workforce_0009,workforce,indigenous_health,indigenous_health,exact,,baseline_zeroshot_retry8192,gemma4:12b,2026-07-19T04:17:16.367185+00:00,801,4773,147286.891371,666.92178
-hesa441_emergency_situation_facing_c_0033,other_none,public_health,public_health,exact,,baseline_zeroshot_retry8192,gemma4:12b,2026-07-19T04:17:16.367185+00:00,755,4080,126699.037014,684.669122
-hesa441_childrens_health_0056,mental_health,mental_health,mental_health,exact,,baseline_zeroshot_retry8192,gemma4:12b,2026-07-19T04:17:16.367185+00:00,825,3066,96909.505088,687.991855
-hesa441_oversight_of_medical_devices_0026,womens_health,pharmacare,pharmacare,exact,,baseline_zeroshot_retry8192,gemma4:12b,2026-07-19T04:17:16.367185+00:00,810,2243,70136.429242,665.84897
-hesa441_oversight_of_medical_devices_0036,womens_health,pharmacare,pharmacare,exact,,baseline_zeroshot_retry8192,gemma4:12b,2026-07-19T04:17:16.367185+00:00,796,2200,69748.631707,680.563615
-hesa441_oversight_of_medical_devices_0037,womens_health,womens_health,womens_health,exact,,baseline_zeroshot_retry8192,gemma4:12b,2026-07-19T04:17:16.367185+00:00,820,2078,67589.396246,756.083231
-hesa441_womens_health_0058,workforce,womens_health,womens_health,exact,,baseline_zeroshot_retry8192,gemma4:12b,2026-07-19T04:17:16.367185+00:00,820,2115,68234.611423,714.880313

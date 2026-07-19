@@ -1,0 +1,81 @@
+{
+  "method": "zeroshot_gemma4-12b",
+  "model": "gemma4:12b",
+  "n": 217,
+  "accuracy": 0.6359,
+  "macro_f1_all": 0.6212,
+  "macro_f1_support10": 0.6155,
+  "macro_f1_trainable": 0.6932,
+  "per_class": {
+    "public_health": {
+      "p": 0.4318,
+      "r": 0.6333,
+      "f1": 0.5135,
+      "support": 30
+    },
+    "pharmacare": {
+      "p": 0.7111,
+      "r": 0.8889,
+      "f1": 0.7901,
+      "support": 36
+    },
+    "womens_health": {
+      "p": 0.4773,
+      "r": 0.6562,
+      "f1": 0.5526,
+      "support": 32
+    },
+    "workforce": {
+      "p": 0.9167,
+      "r": 0.9167,
+      "f1": 0.9167,
+      "support": 24
+    },
+    "childrens_health": {
+      "p": 0.56,
+      "r": 0.7368,
+      "f1": 0.6364,
+      "support": 19
+    },
+    "mental_health": {
+      "p": 1.0,
+      "r": 0.3571,
+      "f1": 0.5263,
+      "support": 14
+    },
+    "cancer": {
+      "p": 0.6667,
+      "r": 0.3077,
+      "f1": 0.4211,
+      "support": 13
+    },
+    "indigenous_health": {
+      "p": 0.6667,
+      "r": 0.6667,
+      "f1": 0.6667,
+      "support": 3
+    },
+    "other_none": {
+      "p": 0.9048,
+      "r": 0.413,
+      "f1": 0.5672,
+      "support": 46
+    }
+  },
+  "efficiency": {
+    "median_latency_s": 17.488,
+    "median_prompt_tokens": 813,
+    "median_output_tokens": 492,
+    "tokens_per_classification": 1305,
+    "cards_per_min": 3.43
+  },
+  "failures": {
+    "n_parse_fail": 0,
+    "n_missing": 0,
+    "parse_method_dist": {
+      "exact": 217
+    }
+  },
+  "timestamp": "2026-07-19T04:44:34.175650+00:00",
+  "predictions_file": "results/predictions_zeroshot_gemma4-12b_gold_with_duplicates.csv"
+}

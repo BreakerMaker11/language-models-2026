@@ -55,6 +55,11 @@ health:
       num_ctx: 8192
       ollama_options:
         num_predict: 10
+    "llama3.2:3b":
+      temperature: 0.0
+      num_ctx: 8192
+      ollama_options:
+        num_predict: 2048
   dataset:
     dev: "data/health/dev.csv"
     train: "data/health/train.csv"

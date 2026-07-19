@@ -1,0 +1,81 @@
+{
+  "method": "embed_lr",
+  "model": "all-MiniLM-L6-v2",
+  "n": 217,
+  "accuracy": 0.4101,
+  "macro_f1_all": 0.2577,
+  "macro_f1_support10": 0.2899,
+  "macro_f1_trainable": 0.5799,
+  "per_class": {
+    "public_health": {
+      "p": 0.22,
+      "r": 0.7333,
+      "f1": 0.3385,
+      "support": 30
+    },
+    "pharmacare": {
+      "p": 0.6038,
+      "r": 0.8889,
+      "f1": 0.7191,
+      "support": 36
+    },
+    "womens_health": {
+      "p": 0.3659,
+      "r": 0.4688,
+      "f1": 0.411,
+      "support": 32
+    },
+    "workforce": {
+      "p": 0.8696,
+      "r": 0.8333,
+      "f1": 0.8511,
+      "support": 24
+    },
+    "childrens_health": {
+      "p": 0.0,
+      "r": 0.0,
+      "f1": 0.0,
+      "support": 19
+    },
+    "mental_health": {
+      "p": 0.0,
+      "r": 0.0,
+      "f1": 0.0,
+      "support": 14
+    },
+    "cancer": {
+      "p": 0.0,
+      "r": 0.0,
+      "f1": 0.0,
+      "support": 13
+    },
+    "indigenous_health": {
+      "p": 0.0,
+      "r": 0.0,
+      "f1": 0.0,
+      "support": 3
+    },
+    "other_none": {
+      "p": 0.0,
+      "r": 0.0,
+      "f1": 0.0,
+      "support": 46
+    }
+  },
+  "efficiency": {
+    "median_latency_s": null,
+    "median_prompt_tokens": null,
+    "median_output_tokens": null,
+    "tokens_per_classification": null,
+    "cards_per_min": null
+  },
+  "failures": {
+    "n_parse_fail": 0,
+    "n_missing": 0,
+    "parse_method_dist": {
+      "lr_predict": 217
+    }
+  },
+  "timestamp": "2026-07-19T04:44:26.572640+00:00",
+  "predictions_file": "results/predictions_embed_lr_gold.csv"
+}

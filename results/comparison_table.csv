@@ -1,0 +1,8 @@
+method,model,accuracy,macro_f1_all,macro_f1_support10,macro_f1_trainable,other_none_recall,median_latency_s,tokens_per_classification,parse_failures
+weakrules,—,0.4147,0.4218,0.4305,0.5385,0.0,,,18
+embed_lr,all-MiniLM-L6-v2,0.4101,0.2577,0.2899,0.5799,0.0,,,0
+zeroshot_gemma2-2b,gemma2:2b,0.6636,0.6427,0.6397,0.6866,0.6522,0.769,817,1
+zeroshot_llama3-2-3b,llama3.2:3b,0.2581,0.1921,0.2161,0.236,0.0652,0.59,802,0
+ablation_nodefs,gemma4:12b,0.5945,0.6013,0.5932,0.7219,0.0,12.857,804,8
+zeroshot_qwen3-14b,qwen3:14b,0.6175,0.556,0.6255,0.7002,0.2174,10.416,1103,0
+zeroshot_gemma4-12b,gemma4:12b,0.6359,0.6212,0.6155,0.6932,0.413,17.488,1305,0

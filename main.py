@@ -103,12 +103,15 @@ RULE2 = (
 )
 
 
-def build_prompt(card_text: str, categories: dict) -> str:
-    defs = "\n".join(f"{code}: {desc}" for code, desc in categories.items())
+def build_prompt(card_text: str, categories: dict, use_codebook: bool = True) -> str:
     codes = ", ".join(categories)
+    if use_codebook:
+        defs = "\n".join(f"{code}: {desc}" for code, desc in categories.items())
+        header = f"Topic definitions:\n{defs}\n\n{RULE2}\n\n"
+    else:
+        header = f"Topics: {codes}\n\n"
     return (
-        f"Topic definitions:\n{defs}\n\n"
-        f"{RULE2}\n\n"
+        f"{header}"
         f"Valid codes: {codes}\n\n"
         f"Document:\n{card_text.strip()}\n\n"
         f"Topic code:"
@@ -141,13 +144,14 @@ def warmup_model(model: str, num_ctx: int, ollama_options: dict) -> None:
 
 def classify_card(card_text: str, categories: dict,
                   model: str, temperature: float, num_ctx: int,
-                  ollama_options: dict | None = None) -> dict:
+                  ollama_options: dict | None = None,
+                  use_codebook: bool = True) -> dict:
     """
     Returns a dict with keys:
       predicted_label, raw_output, elapsed_s,
       prompt_tokens, output_tokens, total_duration_ms, load_duration_ms
     """
-    prompt = build_prompt(card_text, categories)
+    prompt = build_prompt(card_text, categories, use_codebook=use_codebook)
     if "qwen3" in model.lower():
         prompt += " /no_think"
     t0 = time.perf_counter()
@@ -305,7 +309,8 @@ def print_summary(rows: list[dict], timings: list[float]):
 
 # ── Modes ─────────────────────────────────────────────────────────────────────
 
-def run_all_dev(cfg: dict, model_override: str | None = None, resume: bool = False):
+def run_all_dev(cfg: dict, model_override: str | None = None, resume: bool = False,
+                use_codebook: bool = True):
     model, temperature, num_ctx, ollama_options = health_model(cfg, model_override)
     categories = health_categories(cfg)
     dev_path = health_dev_path(cfg)
@@ -332,7 +337,8 @@ def run_all_dev(cfg: dict, model_override: str | None = None, resume: bool = Fal
         card_text = row["card_text"]
         true_label = row.get("topic_seed", "")
 
-        result = classify_card(card_text, categories, model, temperature, num_ctx, ollama_options)
+        result = classify_card(card_text, categories, model, temperature, num_ctx,
+                               ollama_options, use_codebook=use_codebook)
         timings.append(result["elapsed_s"])
         predicted = result["predicted_label"]
         status = predicted if predicted else f"PARSE_ERROR({result['raw_output'][:40]!r})"
@@ -363,7 +369,8 @@ def run_all_dev(cfg: dict, model_override: str | None = None, resume: bool = Fal
     print_summary(rows, timings)
 
 
-def run_all_gold(cfg: dict, model_override: str | None = None, resume: bool = False):
+def run_all_gold(cfg: dict, model_override: str | None = None, resume: bool = False,
+                 use_codebook: bool = True):
     model, temperature, num_ctx, ollama_options = health_model(cfg, model_override)
     categories = health_categories(cfg)
     gold_path = PROJECT_ROOT / cfg["health"]["dataset"]["gold_test"]
@@ -393,7 +400,8 @@ def run_all_gold(cfg: dict, model_override: str | None = None, resume: bool = Fa
         card_text = row["card_text"]
         true_label = row.get("gold_topic", "")
 
-        result = classify_card(card_text, categories, model, temperature, num_ctx, ollama_options)
+        result = classify_card(card_text, categories, model, temperature, num_ctx,
+                               ollama_options, use_codebook=use_codebook)
         timings.append(result["elapsed_s"])
         predicted = result["predicted_label"]
         status = predicted if predicted else f"PARSE_ERROR({result['raw_output'][:40]!r})"
@@ -425,18 +433,19 @@ def run_all_gold(cfg: dict, model_override: str | None = None, resume: bool = Fa
 
 
 def run_single(card_text: str, cfg: dict, doc_id: str = "ad-hoc",
-               model_override: str | None = None):
+               model_override: str | None = None, use_codebook: bool = True):
     model, temperature, num_ctx, ollama_options = health_model(cfg, model_override)
     categories = health_categories(cfg)
 
-    prompt = build_prompt(card_text, categories)
+    prompt = build_prompt(card_text, categories, use_codebook=use_codebook)
     print("── Prompt ───────────────────────────────────────────────")
     print(SYSTEM)
     print()
     print(prompt)
     print(f"── Ollama options: {ollama_options} ─────────────────────")
 
-    result = classify_card(card_text, categories, model, temperature, num_ctx, ollama_options)
+    result = classify_card(card_text, categories, model, temperature, num_ctx,
+                           ollama_options, use_codebook=use_codebook)
     print(result["raw_output"])
     print(f"\nParsed label     : {result['predicted_label'] or 'PARSE_ERROR'}")
     print(f"Parse method     : {result['parse_method']}")
@@ -447,6 +456,97 @@ def run_single(card_text: str, cfg: dict, doc_id: str = "ad-hoc",
     print(f"Output tokens    : {result['output_tokens']}")
     print(f"Total duration   : {result['total_duration_ms']:.0f} ms" if result["total_duration_ms"] else "")
     print(f"Load duration    : {result['load_duration_ms']:.0f} ms" if result["load_duration_ms"] else "")
+
+
+# ── Retry-failed mode ────────────────────────────────────────────────────────
+
+def _failed_doc_ids(predictions_path: Path) -> list[str]:
+    """
+    Return doc_ids whose best row is still failed after deduping.
+    Dedup logic mirrors the harness: prefer parse_method != 'failed', keep first.
+    """
+    df = pd.read_csv(predictions_path)
+    if "parse_method" in df.columns:
+        df = df.sort_values(
+            "parse_method",
+            key=lambda s: s.map(lambda v: 0 if v != "failed" else 1),
+        )
+    df = df.drop_duplicates(subset="doc_id", keep="first")
+    bad = df[df["predicted_label"].isna() | ~df["predicted_label"].isin(VALID_CODES)]
+    return bad["doc_id"].tolist()
+
+
+def run_retry_failed(predictions_path: str, num_predict_override: int,
+                     cfg: dict, model_override: str | None = None,
+                     use_codebook: bool = True):
+    pred_path = Path(predictions_path)
+    if not pred_path.exists():
+        print(f"Error: {pred_path} not found", file=sys.stderr)
+        sys.exit(1)
+
+    failed_ids = _failed_doc_ids(pred_path)
+    if not failed_ids:
+        print("No failed doc_ids found — nothing to retry.")
+        return
+
+    print(f"Failed doc_ids to retry ({len(failed_ids)}):")
+    for did in failed_ids:
+        print(f"  {did}")
+    print()
+
+    model, temperature, num_ctx, ollama_options = health_model(cfg, model_override)
+    # Override num_predict only; keep every other option from config
+    retry_options = {**ollama_options, "num_predict": num_predict_override}
+    categories = health_categories(cfg)
+    gold_path = PROJECT_ROOT / cfg["health"]["dataset"]["gold_test"]
+    gold_df = pd.read_csv(gold_path).set_index("doc_id")
+
+    retry_method = f"{METHOD}_retry{num_predict_override}"
+    ts = datetime.now(timezone.utc).isoformat()
+
+    warmup_model(model, num_ctx, retry_options)
+    print(f"Retrying {len(failed_ids)} cards with num_predict={num_predict_override} …\n")
+
+    results = []
+    for doc_id in failed_ids:
+        if doc_id not in gold_df.index:
+            print(f"  {doc_id}: NOT FOUND in gold_test.csv — skipping", file=sys.stderr)
+            continue
+
+        card_text = gold_df.loc[doc_id, "card_text"]
+        true_label = gold_df.loc[doc_id, "gold_topic"]
+
+        # Single attempt — at temp=0 a retry is pointless
+        result = classify_card(card_text, categories, model, temperature, num_ctx,
+                               retry_options, use_codebook=use_codebook)
+        predicted = result["predicted_label"]
+        status = predicted if predicted else f"STILL_FAILED (output_tokens={result['output_tokens']})"
+        print(f"  {doc_id}: {true_label!r} → {status}  "
+              f"(output_tokens={result['output_tokens']}, {result['elapsed_s']:.1f}s)")
+
+        record = {
+            "doc_id": doc_id,
+            "true_label": true_label,
+            "predicted_label": predicted,
+            "raw_output": result["raw_output"],
+            "parse_method": result["parse_method"],
+            "parse_candidates": result["parse_candidates"],
+            "method": retry_method,
+            "model": model,
+            "timestamp": ts,
+            "prompt_tokens": result["prompt_tokens"],
+            "output_tokens": result["output_tokens"],
+            "total_duration_ms": result["total_duration_ms"],
+            "load_duration_ms": result["load_duration_ms"],
+        }
+        append_rows([record], pred_path)
+        results.append(record)
+
+    n_resolved = sum(1 for r in results if r["predicted_label"] is not None)
+    n_still_failed = len(results) - n_resolved
+    print(f"\nRetry complete: {n_resolved}/{len(results)} resolved, "
+          f"{n_still_failed} still failed.")
+    print(f"Rows appended to {pred_path}\n")
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
@@ -464,22 +564,45 @@ def main():
                        help="Classify a single card supplied as a string")
     group.add_argument("--doc-id", type=str, metavar="ID",
                        help="Classify a single card looked up by doc_id in dev.csv")
+    group.add_argument("--retry-failed", action="store_true",
+                       help="Re-classify failed doc_ids from --predictions using a higher num_predict")
+    parser.add_argument("--predictions", type=str, metavar="PATH",
+                        help="Predictions CSV to read failed doc_ids from (--retry-failed only)")
+    parser.add_argument("--num-predict-override", type=int, metavar="N",
+                        help="num_predict to use for retry pass (--retry-failed only)")
     parser.add_argument("--model", type=str, metavar="MODEL",
                         help="Override the model from config (e.g. gemma2:2b, gemma4:e4b)")
     parser.add_argument("--resume", action="store_true",
                         help="Skip doc_ids already present with a valid predicted_label")
+    parser.add_argument("--no-codebook", action="store_true",
+                        help="Omit category descriptions and precedence rules from the prompt; "
+                             "only the 9 category codes are listed")
 
     args = parser.parse_args()
     cfg = load_config()
+    use_codebook = not args.no_codebook
+    global METHOD
+    if not use_codebook:
+        METHOD = "baseline_zeroshot_nocodebook"
 
-    if args.all_dev:
-        run_all_dev(cfg, model_override=args.model, resume=args.resume)
+    if args.retry_failed:
+        if not args.predictions:
+            parser.error("--retry-failed requires --predictions PATH")
+        if not args.num_predict_override:
+            parser.error("--retry-failed requires --num-predict-override N")
+        run_retry_failed(args.predictions, args.num_predict_override, cfg,
+                         model_override=args.model, use_codebook=use_codebook)
+
+    elif args.all_dev:
+        run_all_dev(cfg, model_override=args.model, resume=args.resume,
+                    use_codebook=use_codebook)
 
     elif args.all_gold:
-        run_all_gold(cfg, model_override=args.model, resume=args.resume)
+        run_all_gold(cfg, model_override=args.model, resume=args.resume,
+                     use_codebook=use_codebook)
 
     elif args.text:
-        run_single(args.text, cfg, model_override=args.model)
+        run_single(args.text, cfg, model_override=args.model, use_codebook=use_codebook)
 
     elif args.doc_id:
         dev_path = health_dev_path(cfg)
@@ -489,7 +612,8 @@ def main():
             print(f"Error: doc_id {args.doc_id!r} not found in {dev_path}", file=sys.stderr)
             sys.exit(1)
         row = matches.iloc[0]
-        run_single(row["card_text"], cfg, doc_id=args.doc_id, model_override=args.model)
+        run_single(row["card_text"], cfg, doc_id=args.doc_id, model_override=args.model,
+                   use_codebook=use_codebook)
 
 
 if __name__ == "__main__":
