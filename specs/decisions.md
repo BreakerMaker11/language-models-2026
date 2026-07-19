@@ -372,3 +372,41 @@ working well (0.5–0.83 range post-fix).
 (womens_health/cancer, childrens_health/cancer) require rule-based
 post-filtering at retrieval time. Embedding similarity alone cannot enforce
 codebook Rule 2. This is noted as a limitation for the week 6 RAG design.
+
+## Week 3 — RAG Classification (2026-07-19)
+
+**Architecture:** ChromaDB vector store (PersistentClient, `.chromadb/` at project root,
+gitignored) over all 506 corpus.csv cards, indexed using `all-MiniLM-L6-v2` via ChromaDB's
+`SentenceTransformerEmbeddingFunction`. Metadata deferred to week 6. Implementation:
+`retrieval/vector_store.py` (HealthVectorStore class with add/add_batch/query/count).
+
+**Boundary anchors:** 4 hand-picked cards in `retrieval/boundary_anchors.yaml` targeting
+the two known gemma4:12b failure directions from week 1:
+- 2 × other_none: COVID public-complaint letters mislabelled public_health by zeroshot model
+- 2 × womens_health: breast implant patient briefs mislabelled pharmacare by zeroshot model
+Fixed anchors always appear first in every prompt, before dynamic retrieval results.
+
+**Prompt structure:** 4 fixed anchors (label + card_text[:400]) → up to 5 dynamic retrieved
+examples (label from corpus topic_seed, unlabeled/invalid filtered out) → full codebook
+definitions + RULE2 + valid codes + card to classify. Same parse logic as main.py.
+
+**RAG classifier:** `retrieval/rag_classify.py` — standalone, main.py untouched.
+Output: `results/predictions_rag_{safe_model}_gold.csv` (standard predictions schema).
+Supports --resume to continue interrupted runs.
+
+**Evaluation baseline:** zeroshot_gemma4-12b (macro_f1_all=0.6212, other_none recall=0.413,
+womens_health F1=0.553). Primary targets: other_none recall and womens_health F1.
+
+**Corpus indexing:** 506 cards indexed in ~2 min locally (all-MiniLM-L6-v2 sentence-transformers).
+Retrieval smoke test on "opioid overdose harm reduction" returns opioid-epidemic study briefs
+at distance ≤0.38 — semantically correct.
+
+**Week 3 RAG result (2026-07-19):** RAG regressed vs zero-shot baseline: macro-F1 0.570 vs 0.621.
+other_none recall collapsed from 0.413 → 0.109. Root cause: other_none boundary anchors are COVID
+public-complaint letters; the actual other_none failure cluster is breast-cancer-screening
+submissions (46 gold cards) which are semantically indistinguishable from womens_health to the
+embedding model. Dynamic retrieval floods the prompt with 5× womens_health examples for those
+cards; the anchors provide no corrective signal because they look nothing like the query document.
+The hard boundary between womens_health and other_none for breast-screening cards is a labeling
+rule (personal story / civil-liberties framing → other_none; policy brief → womens_health), not
+a semantic distinction — confirmed as a limitation of the RAG approach for this corpus.

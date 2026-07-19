@@ -1,0 +1,11 @@
+,public_health,pharmacare,womens_health,workforce,childrens_health,mental_health,cancer,indigenous_health,other_none,PARSE_FAIL
+public_health,20,0,4,0,3,1,2,0,0,0
+pharmacare,0,31,0,0,3,0,1,1,0,0
+womens_health,0,12,16,0,0,2,0,0,0,2
+workforce,1,0,0,21,0,1,0,1,0,0
+childrens_health,4,0,2,0,11,1,0,1,0,0
+mental_health,1,0,2,0,0,11,0,0,0,0
+cancer,0,0,5,0,4,0,4,0,0,0
+indigenous_health,0,0,0,0,0,0,0,3,0,0
+other_none,32,2,4,1,0,2,0,0,5,0
+PARSE_FAIL,0,0,0,0,0,0,0,0,0,0
