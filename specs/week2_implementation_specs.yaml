@@ -1,0 +1,189 @@
+# Week 2 Tokenization and Embedding - Implementation Specs
+
+approach:
+  summary: >
+    Build a reusable embedding evaluation script that compares gemma4:12b (via Ollama)
+    and all-MiniLM-L6-v2 (via sentence-transformers) on 20 domain-specific term pairs
+    drawn from the HESA health-policy codebook, scoring close vs far pairs to validate
+    that the chosen model can distinguish the 9 topic boundaries before use in
+    topic clustering and RAG retrieval.
+
+  decisions:
+    pair_source:
+      choice: 20 pairs derived from codebook_v1_1.md keywords
+      reasoning: >
+        The codebook is the authoritative source of domain vocabulary for the 9-class
+        classifier. Using its terms ensures the evaluation tests the exact boundaries
+        the model will need to respect at inference time.
+
+    pair_types:
+      choice: Same-topic close pairs + different-topic far pairs, including hard boundary cases
+      reasoning: >
+        Hard boundary pairs (e.g. opioid vs depression — public_health vs mental_health
+        per the amended v1.1 codebook) are the most diagnostic: a weak model scores
+        them as similar because the terms are semantically adjacent in general text,
+        but the correct classifier must treat them as far. Easy far pairs confirm basic
+        topic separation; hard pairs reveal whether the model encodes the codebook's
+        specific boundaries.
+
+    models:
+      choice: gemma4:12b (ollama.embed, remote) and all-MiniLM-L6-v2 (sentence-transformers, local), compared side by side
+      reasoning: >
+        gemma4:12b is already in use for zero-shot classification; testing its embeddings
+        reveals whether its internal representations match its classification behaviour.
+        all-MiniLM-L6-v2 is a dedicated similarity model already used in the embed_lr
+        classifier, making it a natural baseline. Side-by-side comparison on the same
+        pairs makes the gap scores directly comparable.
+
+    configurable_model_list:
+      choice: Models defined as a list of dicts in the script, not hardcoded
+      reasoning: >
+        If either model scores gap < 0.2, a third model from the MTEB leaderboard
+        should be added without rewriting the script. A configurable list means
+        adding one dict entry is sufficient.
+
+    output_granularity:
+      choice: Per-pair scores for each model, plus calculate_gap summary printed to console
+      reasoning: >
+        A single gap number hides which specific pairs fail. Per-pair scores let us
+        inspect hard boundary cases individually and identify exactly where each model's
+        representation diverges from the codebook's boundaries.
+
+    third_model_rule:
+      choice: If either model gap < 0.2, consult MTEB leaderboard and add a third model
+      reasoning: >
+        The assignment requirement is gap >= 0.2 for a model to be considered usable.
+        Since two models are compared, a mixed result (one passes, one fails) still
+        warrants exploring a better option before committing to an embedding model
+        for RAG and topic clustering.
+
+tasks:
+  task_1:
+    name: Define the 20 domain pairs
+    details: |
+      Embed the pairs directly in src/eval/embedding_eval.py as DOMAIN_PAIRS,
+      a list of dicts with keys: term1, term2, pair_type, topic1, topic2, boundary_type.
+
+      CLOSE pairs (pair_type="close", boundary_type="easy" unless noted):
+        {term1: "pandemic",               term2: "infectious disease",    topic1: "public_health",    topic2: "public_health",    boundary_type: "easy"}
+        {term1: "opioid",                 term2: "harm reduction",        topic1: "public_health",    topic2: "public_health",    boundary_type: "easy"}
+        {term1: "pharmacare",             term2: "drug coverage",         topic1: "pharmacare",       topic2: "pharmacare",       boundary_type: "easy"}
+        {term1: "biosimilar",             term2: "patented medicine",     topic1: "pharmacare",       topic2: "pharmacare",       boundary_type: "easy"}
+        {term1: "maternal care",          term2: "midwifery",             topic1: "womens_health",    topic2: "womens_health",    boundary_type: "easy"}
+        {term1: "breast cancer",          term2: "cervical cancer",       topic1: "womens_health",    topic2: "womens_health",    boundary_type: "easy"}
+        {term1: "mood disorder",          term2: "psychiatric services",  topic1: "mental_health",    topic2: "mental_health",    boundary_type: "easy"}
+        {term1: "suicide prevention",     term2: "depression",            topic1: "mental_health",    topic2: "mental_health",    boundary_type: "easy"}
+        {term1: "nurse shortage",         term2: "scope of practice",     topic1: "workforce",        topic2: "workforce",        boundary_type: "easy"}
+        {term1: "internationally trained",term2: "licensure",             topic1: "workforce",        topic2: "workforce",        boundary_type: "easy"}
+        {term1: "Jordan's Principle",     term2: "First Nations",         topic1: "indigenous_health",topic2: "indigenous_health",boundary_type: "easy"}
+        {term1: "pediatric oncology",     term2: "child development",     topic1: "childrens_health", topic2: "childrens_health", boundary_type: "easy"}
+        {term1: "carcinogen",             term2: "oncology",              topic1: "cancer",           topic2: "cancer",           boundary_type: "easy"}
+
+      FAR pairs (pair_type="far"):
+        {term1: "opioid",            term2: "depression",          topic1: "public_health",    topic2: "mental_health",    boundary_type: "hard"}
+        {term1: "harm reduction",    term2: "psychiatric services",topic1: "public_health",    topic2: "mental_health",    boundary_type: "hard"}
+        {term1: "breast cancer",     term2: "oncology",            topic1: "womens_health",    topic2: "cancer",           boundary_type: "hard"}
+        {term1: "pediatric oncology",term2: "cancer screening",    topic1: "childrens_health", topic2: "cancer",           boundary_type: "hard"}
+        {term1: "Jordan's Principle",term2: "suicide prevention",  topic1: "indigenous_health",topic2: "mental_health",    boundary_type: "hard"}
+        {term1: "drug coverage",     term2: "nurse shortage",      topic1: "pharmacare",       topic2: "workforce",        boundary_type: "easy"}
+        {term1: "pandemic",          term2: "maternal care",       topic1: "public_health",    topic2: "womens_health",    boundary_type: "easy"}
+
+  task_2:
+    name: Build embedding_eval.py
+    details: |
+      File: src/eval/embedding_eval.py
+      Run as: uv run python -m eval.embedding_eval
+
+      MODELS list (configurable — add entries here to test a third model):
+        [
+          {"name": "gemma4:12b",        "backend": "ollama"},
+          {"name": "all-MiniLM-L6-v2",  "backend": "sentence_transformers"},
+        ]
+
+      For each model:
+        - ollama backend: call ollama.embed(model=name, input=[term1, term2])
+          Set OLLAMA_HOST env var before running (export OLLAMA_HOST=http://100.85.195.54:11434)
+          Extract vectors from response.embeddings[0] and response.embeddings[1]
+        - sentence_transformers backend: SentenceTransformer(name).encode([term1, term2])
+
+      Compute cosine similarity for each pair:
+        from sklearn.metrics.pairwise import cosine_similarity
+        score = cosine_similarity([vec1], [vec2])[0][0]
+
+      calculate_gap per model:
+        gap = mean(scores where pair_type=="close") - mean(scores where pair_type=="far")
+        Also compute gap for hard boundary pairs only (boundary_type=="hard")
+
+      Print to console:
+        - Per-model gap (all pairs) and gap (hard boundary pairs only)
+        - Flag any close pair scoring < 0.5 or any far pair scoring > 0.6 as surprising
+
+  task_3:
+    name: Write results/embedding_eval.csv
+    details: |
+      Columns:
+        term1, term2, pair_type, topic1, topic2, boundary_type,
+        score_<model_safe_name> for each model in MODELS list
+
+      model_safe_name = model name with : and - replaced by _
+      (e.g. "gemma4:12b" → "score_gemma4_12b", "all-MiniLM-L6-v2" → "score_all_MiniLM_L6_v2")
+
+      Write with pandas to_csv(index=False).
+      Path: results/embedding_eval.csv
+
+  task_4:
+    name: Third model if gap < 0.2
+    details: |
+      If either model's gap score < 0.2:
+        1. Visit https://huggingface.co/spaces/mteb/leaderboard
+        2. Filter by task=STS (Semantic Textual Similarity), language=English
+        3. Pick a model small enough to run locally (< 500M params)
+        4. Add to MODELS list: {"name": "<hf_model_id>", "backend": "sentence_transformers"}
+        5. Re-run the script — the new column appears automatically in embedding_eval.csv
+
+integration_steps:
+  - src/eval/embedding_eval.py is a standalone evaluation script; it does not modify
+    the classifier pipeline. Results inform the choice of embedding model for future
+    weeks (RAG retrieval in week 6, topic clustering).
+  - results/embedding_eval.csv goes in the standard results/ directory alongside
+    eval_summary_*.json files from the harness.
+  - The MODELS list pattern mirrors the health.models dict in config.yaml — same
+    principle of configurable backends.
+
+evaluation_plan:
+  metrics:
+    - calculate_gap (mean close score − mean far score, per model)
+    - calculate_gap on hard boundary pairs only
+    - per-pair cosine similarity score (to identify surprising pairs)
+  dataset_size: 20 pairs (13 close, 7 far — 5 of the far pairs are hard boundary cases)
+  baseline: >
+    Random/uniform embeddings would produce gap ≈ 0.0. A gap >= 0.2 is the
+    assignment pass threshold. The hard-boundary-only gap is the stricter test:
+    a model that passes overall but fails on hard pairs is not safe for this domain.
+
+reference_materials:
+  notebook: notebooks/week2_tokenization_and_embedding.ipynb
+  codebook: data/health/codebook_v1_1.md
+
+success_criteria:
+  minimum: >
+    At least one model achieves gap >= 0.2 on all pairs AND gap > 0.0 on hard
+    boundary pairs. embedding_eval.csv written with per-pair scores for both models.
+  good: >
+    Both models achieve gap >= 0.2. Hard boundary pairs score noticeably lower than
+    easy far pairs, confirming the model encodes codebook-specific boundaries.
+  excellent: >
+    all-MiniLM-L6-v2 outperforms gemma4:12b on hard boundary pairs, validating
+    the use of a dedicated similarity model over a generative model's by-product
+    embeddings for RAG and topic clustering.
+
+verification:
+  cli:
+    - "export OLLAMA_HOST=http://100.85.195.54:11434"
+    - "uv run python -m eval.embedding_eval"
+    - "Check console output: gap scores printed for each model; hard-boundary gap printed separately"
+    - "Check results/embedding_eval.csv exists and has 20 rows and score columns for both models"
+    - "Inspect hard boundary pairs: opioid/depression and breast cancer/oncology should score lower than their respective close pairs"
+  streamlit:
+    - "This week's deliverable is a CLI evaluation script — no Streamlit changes required"
+    - "Confirm results/embedding_eval.csv is present; it will be used by future weeks"

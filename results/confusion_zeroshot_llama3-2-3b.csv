@@ -1,0 +1,10 @@
+,public_health,pharmacare,womens_health,workforce,childrens_health,mental_health,cancer,indigenous_health,other_none
+public_health,29,0,0,0,1,0,0,0,0
+pharmacare,24,11,0,0,1,0,0,0,0
+womens_health,30,1,1,0,0,0,0,0,0
+workforce,21,0,0,2,1,0,0,0,0
+childrens_health,10,0,0,0,9,0,0,0,0
+mental_health,13,0,0,0,0,1,0,0,0
+cancer,8,0,2,0,3,0,0,0,0
+indigenous_health,3,0,0,0,0,0,0,0,0
+other_none,42,0,1,0,0,0,0,0,3

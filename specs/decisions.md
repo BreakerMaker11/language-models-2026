@@ -95,6 +95,84 @@ the final report's data & methods narrative.
 - COVID downsampling / per-study cap at train time noted as imbalance
   handling for the write-up.
 
+## Evaluation harness — src/eval/harness.py (2026-07-18)
+
+**Unified scorer built:** `src/eval/harness.py` — pure scorer, no inference.
+Invoked as `uv run python -m eval.harness --predictions results/X.csv --method NAME`.
+Load & align: reads predictions CSV, dedupes to one row per doc_id (prefers
+parse_method != 'failed'), left-joins to gold_test.csv on doc_id. Asserts
+exactly 217 gold doc_ids covered; missing predictions get predicted_label=None
+→ "PARSE_FAIL" so they score as errors, never drop from the denominator.
+Invalid/None predicted_label also mapped to "PARSE_FAIL".
+
+**Label space fixed at 9:** LABELS list passed explicitly as `labels=` to every
+sklearn call so classes with zero predictions appear with 0.0 rather than being
+silently dropped. other_none scored as a real class.
+
+**Three macro-F1 variants:** macro_f1_all (all 9), macro_f1_support10 (classes
+with gold support ≥ 10 — excludes indigenous_health n=3), macro_f1_trainable
+(classes present as non-unlabeled topic_seed in train.csv — computed from the
+file, not hardcoded; currently: public_health, pharmacare, womens_health, workforce).
+
+**Output schema:** `results/eval_summary_{method}.json` with fixed structure
+(method, model, n, accuracy, macro_f1_all, macro_f1_support10, macro_f1_trainable,
+per_class, efficiency, failures, timestamp, predictions_file).
+Confusion matrix written as CSV + PNG (rows=true, cols=predicted).
+
+**Efficiency block** computed from predictions columns where present: median
+latency, median prompt/output tokens, tokens_per_classification, cards_per_min.
+Null for methods without timing columns.
+
+## Baseline method results — gold set (2026-07-18)
+
+Three methods evaluated against gold_test.csv (n=217):
+
+**weakrules** (`src/eval/generate_weakrules.py`): joins corpus.csv topic_seed
+onto gold doc_ids; topic_seed='unlabeled' → PARSE_FAIL. No inference.
+Accuracy 0.415, macro-F1 all=0.422, trainable=0.539. 18 PARSE_FAILs (unlabeled
+cards). other_none F1=0.000 (rules never fire that label). Floor baseline.
+
+**embed_lr** (`src/eval/embed_lr.py`): all-MiniLM-L6-v2 sentence embeddings +
+LogisticRegression(max_iter=2000, class_weight='balanced'). Trained on 211
+non-unlabeled train.csv rows (4 classes only: public_health, pharmacare,
+womens_health, workforce). Accuracy 0.410, macro-F1 all=0.258, trainable=0.580.
+Macro-F1 collapses because the model predicts zero for 5 classes not present in
+training data — confirmed expected finding, not a bug. 0 parse failures.
+
+**zeroshot_gemma4-12b**: Accuracy 0.627, macro-F1 all=0.634, trainable=0.704.
+10 parse failures (output_tokens hit 2048 cap on cards with runaway thinking
+chains). Correctly predicts all 9 classes including zero-train ones
+(mental_health F1=0.444, indigenous_health F1=0.800, cancer F1=0.421).
+Median latency 17.5s, 3.43 cards/min. Clear winner over both baselines.
+
+## main.py extensions (2026-07-18/19)
+
+**--all-gold mode added (2026-07-18):** `run_all_gold()` classifies all 217
+gold_test.csv cards, writing to `results/predictions_zeroshot_{model}_gold.csv`.
+Resume logic identical to --all-dev (skip doc_ids with valid predicted_label).
+
+**--no-codebook flag (2026-07-19):** Allows excluding category descriptions and
+Rule 2 precedence from the prompt. With flag: prompt contains only the 9 bare
+category codes ("Topics: code1, code2, ...") plus the card text. Without flag
+(default): full definitions + Rule 2 included as before. System prompt
+("Respond with exactly one category code") is always present regardless of flag.
+Provenance recorded in method column: baseline_zeroshot_nocodebook.
+
+**llama3.2:3b added to config (2026-07-19):** Added to health.models in
+config.yaml with temperature=0.0, num_ctx=8192, num_predict=2048.
+
+**--retry-failed mode (2026-07-19):** Rescue pass for cards whose best row is
+still failed after deduping. Usage: `--retry-failed --predictions PATH
+--num-predict-override N`. Identifies failed doc_ids from the given predictions
+CSV (dedup then filter invalid predicted_label), prints the list, re-classifies
+only those cards from gold_test.csv with num_predict overridden. Single attempt
+per card (temp=0, retry pointless). Appends new rows to the same CSV; never
+rewrites existing rows. Provenance in method column:
+baseline_zeroshot_retry{N}. Harness dedupe picks up resolved rows automatically.
+Targeting predictions_zeroshot_gemma4-12b_gold_with_duplicates.csv (7 failures)
+rather than cleaned_ file (10 failures) — duplicates file already contains
+successful retry rows for 3 cards the cleaned file is missing.
+
 ## Labeling redesign (2026-07-11)
 
 **Cross-cutting topics removed:** `digital_health`, `wait_times`, `funding`,
@@ -245,3 +323,52 @@ weak-agreement on 24 labeled cards, median latency 11.1s, median output_tokens
 343 (includes thinking tokens in eval_count despite /no_think — needs
 verification on clean run). Head-to-head comparison deferred to next session
 pending clean gemma4 run.
+
+## Week 2 — Embedding evaluation (2026-07-19)
+
+**Evaluation script:** `src/eval/embedding_eval.py` — compares embedding models
+on 20 domain-specific term pairs (13 close, 7 far, 5 hard-boundary) drawn from
+codebook_v1_1.md. Configurable MODELS list; adding a new model requires one
+dict entry. Outputs `results/embedding_eval.csv` with per-pair cosine similarity
+scores for each model and prints gap summary to console.
+
+**Ollama embedding finding:** The remote Ollama server (RTX 3060, 100.85.195.54)
+does not support `ollama embed` CLI (too old) and gemma4:12b returns 501 on the
+embeddings API endpoint. Fix: pulled `nomic-embed-text` (dedicated embedding
+model, 768 dims) on the remote — Python `ollama.embed()` client works even
+though the CLI subcommand is absent.
+
+**Models evaluated:** nomic-embed-text (Ollama, remote), all-MiniLM-L6-v2
+(sentence-transformers, local), all-mpnet-base-v2 (sentence-transformers, local).
+Gap scores: nomic=+0.12, MiniLM=+0.18, mpnet=+0.17 — all below the 0.2
+threshold.
+
+**Key finding — gap threshold not applicable to hard boundary pairs:**
+The 0.2 gap threshold assumes close=semantically similar and far=semantically
+distant. The codebook's hard boundary pairs violate this: `breast cancer /
+oncology services` and `childhood cancer treatment / cancer screening` are
+genuinely semantically similar — the codebook separates them by a labeling rule
+(womens_health beats cancer; childrens_health beats cancer), not semantic
+distance. No general embedding model will score these as far, and that is
+correct behaviour. The gap is depressed by design, not by model weakness.
+
+**First-pass pair failure — proper nouns:** Original pairs using `Jordan's
+Principle`, `First Nations`, `nurse shortage / scope of practice`, and
+`internationally trained / licensure` scored near-zero (0.004–0.395) on close
+pairs across all models. Cause: policy-specific proper nouns and jargon fragment
+into generic subword tokens in general-purpose models. Fix: replaced with
+descriptive phrases (`Indigenous health services / Indigenous peoples health`,
+`foreign-trained doctors / medical licensure`). Post-fix close scores: 0.833–0.890
+for indigenous health pair across all three models.
+
+**Selected embedding model: all-MiniLM-L6-v2** (gap=+0.1819, closest to
+threshold). Rationale: the remaining gap deficit is attributable to hard boundary
+pairs that are semantically similar by design, not model weakness. BERT-family
+models (BioBERT, PubMedBERT) were considered but rejected — they would not
+resolve the hard boundary issue and the domain-specific close pairs are already
+working well (0.5–0.83 range post-fix).
+
+**Implication for RAG and topic clustering:** Hard boundary classes
+(womens_health/cancer, childrens_health/cancer) require rule-based
+post-filtering at retrieval time. Embedding similarity alone cannot enforce
+codebook Rule 2. This is noted as a limitation for the week 6 RAG design.

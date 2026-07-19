@@ -1,0 +1,21 @@
+term1,term2,pair_type,topic1,topic2,boundary_type,score_nomic_embed_text,score_all_MiniLM_L6_v2,score_all_mpnet_base_v2
+pandemic,infectious disease,close,public_health,public_health,easy,0.733964006737752,0.5370280742645264,0.6012542843818665
+opioid overdose,harm reduction program,close,public_health,public_health,easy,0.42345749633286456,0.1565622091293335,0.292522668838501
+pharmacare,drug coverage,close,pharmacare,pharmacare,easy,0.5534756285843367,0.4013325870037079,0.513222873210907
+generic biologic drug,patented medicine,close,pharmacare,pharmacare,easy,0.6301801098808258,0.5801823139190674,0.5859661102294922
+maternal care,midwifery,close,womens_health,womens_health,easy,0.6280676305449486,0.591825008392334,0.6013333201408386
+breast cancer,cervical cancer,close,womens_health,womens_health,easy,0.6992851835472266,0.5428503751754761,0.5841098427772522
+mood disorder,psychiatric services,close,mental_health,mental_health,easy,0.5740517479614333,0.5405240058898926,0.5116190314292908
+suicide prevention,depression,close,mental_health,mental_health,easy,0.5525336245909056,0.5227870941162109,0.5401774644851685
+healthcare worker shortage,clinical duties expansion,close,workforce,workforce,easy,0.49008302602634773,0.4160061776638031,0.4856093227863312
+foreign-trained doctors,medical licensure,close,workforce,workforce,easy,0.603019347728519,0.4387488067150116,0.5373185873031616
+Indigenous health services,Indigenous peoples health,close,indigenous_health,indigenous_health,easy,0.8639572276309726,0.8325691223144531,0.8901485204696655
+childhood cancer treatment,pediatric care,close,childrens_health,childrens_health,easy,0.616094717924021,0.5057128667831421,0.5185105204582214
+carcinogen,cancer screening,close,cancer,cancer,easy,0.6260185404008568,0.4556182026863098,0.29979246854782104
+drug coverage,healthcare worker shortage,far,pharmacare,workforce,easy,0.4525158409737229,0.32807114720344543,0.2940446734428406
+pandemic,maternal care,far,public_health,womens_health,easy,0.397173807898224,0.23352554440498352,0.2638532817363739
+opioid overdose,depression,far,public_health,mental_health,hard,0.5085034203783024,0.2418462485074997,0.33421939611434937
+harm reduction program,psychiatric services,far,public_health,mental_health,hard,0.4795684078771476,0.31310853362083435,0.5496270060539246
+breast cancer,oncology services,far,womens_health,cancer,hard,0.6224539386472081,0.4380480647087097,0.5040735006332397
+childhood cancer treatment,cancer screening,far,childrens_health,cancer,hard,0.5989568277692094,0.4650811553001404,0.36363285779953003
+Indigenous health services,suicide prevention,far,indigenous_health,mental_health,hard,0.40336445644291397,0.21904879808425903,0.24627235531806946
