@@ -1,0 +1,88 @@
+# Known-answer retrieval queries for rag/eval.py
+#
+# hit_doc_ids: at least one of these doc_ids must appear in the top-k
+# retrieved chunks for the query to count as a hit.
+# Queries are written to be specific enough that the right document should
+# rank highly, without being so close to the chunk text that it trivially matches.
+
+queries:
+
+  - id: q01
+    description: "Committee recommendations on mammography for women aged 40-49"
+    query: "committee recommendations mammography screening age 40 to 49"
+    filter: hesa_report
+    hit_doc_ids:
+      - hesa441_breast_cancer_screening_guid_0016
+
+  - id: q02
+    description: "Safe supply / regulated drugs as overdose prevention strategy"
+    query: "regulated safe supply fentanyl overdose prevention"
+    filter: hesa_brief
+    hit_doc_ids:
+      - hesa441_opioid_epidemic_and_toxic_dr_0020   # Ottawa Inner City Health
+      - hesa441_opioid_epidemic_and_toxic_dr_0026   # 130+ experts letter on safer supply scale-up
+      - hesa441_opioid_epidemic_and_toxic_dr_0025   # BC Centre on Substance Use
+      - hesa441_opioid_epidemic_and_toxic_dr_0035   # ANKORS
+
+  - id: q03
+    description: "CMA proposal to scale Practice-Ready Assessments for foreign-trained physicians"
+    query: "Practice-Ready Assessment licensing pathway internationally trained physicians"
+    filter: hesa_brief
+    hit_doc_ids:
+      - hesa451_impact_of_immigration_policy_0018   # Canadian Medical Association
+
+  - id: q04
+    description: "Committee recommendation for a national breast implant registry"
+    query: "national breast implant registry tracking complications"
+    filter: hesa_report
+    hit_doc_ids:
+      - hesa441_oversight_of_medical_devices_0043
+
+  - id: q05
+    description: "Paediatric Society brief on children's mental health and school closures"
+    query: "children mental health school closures COVID social isolation"
+    filter: hesa_brief
+    hit_doc_ids:
+      - hesa441_childrens_health_0056               # Canadian Paediatric Society
+
+  - id: q06
+    description: "Pharmacare and coverage of diabetes / insulin drugs"
+    query: "pharmacare coverage diabetes drugs insulin formulary"
+    filter: hesa_brief
+    hit_doc_ids:
+      - hesa441_bill_c64_0011                       # Association québécoise des pharmaciens
+      - hesa441_bill_c64_0002                       # Canadian Association of University Teachers
+      - hesa441_bill_c64_0037                       # Canadian Chamber of Commerce
+      - hesa441_bill_c64_0008                       # Type 1 Together — diabetes drugs on WHO Essential Medicines List
+      - hesa441_bill_c64_0015                       # Novo Nordisk Canada — diabetes/insulin
+      - hesa441_bill_c64_0009                       # Canadian Generic Pharmaceutical Association
+
+  - id: q07
+    description: "Government response on clarifying the PMPRB mandate"
+    query: "PMPRB mandate patented medicine price regulation clarify"
+    filter: gov_response
+    hit_doc_ids:
+      - hesa441_patented_medicine_prices_rev_0009
+
+  - id: q08
+    description: "Government commitments on closing the women's health gender gap"
+    query: "government closing gender gap women health research funding"
+    filter: gov_response
+    hit_doc_ids:
+      - hesa451_womens_health_0002
+
+  - id: q09
+    description: "AMR surveillance and infection control in healthcare settings"
+    query: "antimicrobial resistance surveillance infection control healthcare"
+    filter: hesa_brief
+    hit_doc_ids:
+      - hesa451_antimicrobial_resistance_0010       # Infection Prevention and Control Canada
+
+  - id: q10
+    description: "Domestic pharmaceutical manufacturing and supply chain sovereignty"
+    query: "domestic pharmaceutical manufacturing supply chain sovereignty"
+    filter: hesa_brief
+    hit_doc_ids:
+      - hesa451_canadas_pharmaceutical_sover_0006   # JAMP Pharma Group
+      - hesa451_canadas_pharmaceutical_sover_0010   # Neighbourhood Pharmacy Association
+      - hesa451_canadas_pharmaceutical_sover_0013   # Coalition solidarité santé

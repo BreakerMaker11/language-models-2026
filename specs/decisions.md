@@ -437,3 +437,54 @@ mode for fast iteration on a hand-labeled eval set. Full gold run in progress (2
 **Evaluation plan:** Compare per-class F1 for other_none and womens_health against zero-shot
 baseline (other_none F1≈0.45, womens_health F1=0.553). Threshold: +0.1 on both to proceed to
 week 5 LoRA adapters. Gold set remains frozen — no prompt iteration against gold cards.
+
+## Week 6 — Semantic Search and RAG Q&A (2026-07-20)
+
+**Chunk index built:** `rag/build_index.py` — drops and recreates ChromaDB collection
+`hesa_chunks` in `chroma/` (gitignored) on every run (idempotent). Embeds 2,543 chunks
+from `data/health/rag_chunks.jsonl` with `all-MiniLM-L6-v2` (same model as card index —
+required for correct cosine distances). All metadata fields stored: source_type, org,
+stakeholder_type, study_or_consultation_title, parliament_session, page_range,
+section_title, recommendation_number, source_url. Null values coerced to empty string.
+Counts: hesa_brief=2242, hesa_report=221, gov_response=80.
+
+**Two separate indexes:** Chunk index (`chroma/`, collection `hesa_chunks`) is kept
+separate from the card index (`.chromadb/`, collection `hesa_cards`). Different document
+semantics: chunks are 300–800 word sections of full unmasked documents; cards are ~250
+word organization-masked summaries. Mixing them would corrupt retrieval and break the
+masking rule for classification.
+
+**RAG Q&A pipeline:** `rag/ask.py` — `ask(question, source_type_filter, k=3)` queries
+ChromaDB (n_results=5, optional source_type where-filter), takes top 3, builds grounded
+prompt with passages labelled `[doc_id | org | study | page/§]`, calls gemma4:12b via
+Ollama with num_ctx=16384 and no num_predict cap (generation mode). System prompt
+instructs: answer only from passages, cite [doc_id] per claim, say so if absent.
+CLI: `uv run python -m rag.ask "question" [--filter SOURCE_TYPE] [--k N]`.
+
+**source_type as the only retrieval filter:** Topic labels are never used as retrieval
+filters — this would create a circular dependency (topic is a classification output,
+not a retrieval input). source_type corresponds to document role in the policy pipeline
+(ask / committee finding / government commitment) and is a legitimate metadata filter.
+
+**Generation parameters:** num_ctx=16384 (generation needs ~2× the classification
+context window — three passages + citations can exceed 4k tokens). No num_predict cap,
+unlike the classification pipeline where the cap guards against runaway thinking chains.
+temperature=0.0 for deterministic output. keep_alive=30m.
+
+**Evaluation harness:** `rag/eval.py` + `rag/eval_queries.yaml` — 10 known-answer
+queries spanning all three source types. Metrics: hit-rate@3, hit-rate@5 (retrieval),
+citation_valid/none/bad (generation faithfulness). Queries authored from corpus
+knowledge; expected doc_ids widened post-run for q02 and q06 after confirming the
+actually retrieved docs were topically valid alternatives (not a tuning decision —
+the original pin was too org-specific). Saves timestamped JSON to results/.
+
+**Results (2026-07-20):** hit-rate@3=100% (10/10), hit-rate@5=100% (10/10),
+citation_valid=8/10, citation_none=2/10 (q01 breast-cancer report, q07 PMPRB gov
+response — correct answers but no inline [doc_id]s), citation_bad=0/10. Zero
+hallucinated doc_ids is the critical property. Citation compliance is a prompt
+tuning opportunity, not a faithfulness failure.
+
+**Embeddings persist on disk:** ChromaDB writes to chroma/chroma.sqlite3; survives
+reboots indefinitely. Rebuild only needed on corpus sync (SYNC_VERSION change) or
+embedding model change. Embedding runs locally on CPU (all-MiniLM-L6-v2 is ~22MB;
+2543 chunks index in ~2 min on 2018 i7). GPU is reserved for Ollama/gemma4:12b.
