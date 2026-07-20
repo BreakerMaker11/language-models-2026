@@ -1,0 +1,180 @@
+# Week 8 Evaluation and Beyond — Implementation Specs
+
+approach:
+  summary: >
+    Build the week-8 demo Streamlit app (app/streamlit_app.py) with four tabs:
+    Classify, Ask the record, Evaluation, and Gap analysis. Refactor rag/ask.py
+    so ask() returns (answer, passages) to avoid a second retrieval round-trip in
+    the app. Create demo assets (cma_sections.json, cached fallbacks) and a
+    precompute script for the gap analysis tab. The app is entirely read-only
+    against gold, predictions, and instructor code.
+
+  decisions:
+    ask_signature_refactor:
+      choice: >
+        ask() returns (answer: str, passages: list[dict]) instead of just str.
+        CLI uses answer, _ = ask(...)
+      reasoning: >
+        The Streamlit app needs both the answer and the passages to render the
+        citation expanders in Tab 2. Returning both from a single call avoids
+        querying ChromaDB twice (once for the answer, once to display passages).
+        The change is backward-compatible: CLI callers unpack with _.
+
+    launch_command:
+      choice: "uv run --no-sync streamlit run app/streamlit_app.py"
+      reasoning: >
+        torch==2.11.0 is pinned for the Linux GPU server but has no wheel for
+        macosx_15_0_x86_64. --no-sync skips the sync step and runs with the
+        packages already in .venv. The app does not import torch directly;
+        sentence-transformers uses a compatible installed version at runtime.
+        Documented in app/README.
+
+    demo_document:
+      choice: >
+        8 CMA ministerial letter sections in demo/cma_sections.json.
+        Deliberately out-of-distribution (multi-topic letter) to demonstrate
+        the limits of single-label classification.
+      reasoning: >
+        The CMA letter spans ~8 health policy topics — a real scenario where
+        the single-label classifier must pick the best fit. Contrasting keyword
+        rules vs gemma4 predictions on the same text surfaces the difference
+        between lexical and semantic classification.
+
+    offline_fallback:
+      choice: >
+        Tab 1 falls back to demo/cached_classify.json; Tab 2 falls back to
+        demo/cached_ask.json. Both wrapped in try/except around the Ollama call.
+      reasoning: >
+        The recorded demo must not die if the GPU server is unreachable. Cached
+        fallbacks let the demo run entirely offline. Tabs 3 and 4 are always
+        offline (disk reads only).
+
+    keyword_classifier:
+      choice: >
+        Lightweight keyword_classify() in streamlit_app.py using strong keywords
+        from the codebook. Not identical to topic_rules.yaml (which is in the
+        corpus repo) but approximates the same precedence logic.
+      reasoning: >
+        topic_rules.yaml is not checked into this repo. The strong-keyword set
+        documented in decisions.md (pharmacare, internationally trained, opioid,
+        etc.) is sufficient for the demo — the goal is to show the contrast with
+        gemma4, not to replicate corpus-level rules exactly.
+
+    tab3_read_only:
+      choice: All eval data loaded from results/eval_summary_*.json; no computation.
+      reasoning: >
+        Running classifiers inside a Streamlit session would require warmup and
+        could take minutes. The evaluation tab is a results display, not an
+        inference engine. Pre-computed results are the correct design.
+
+    gap_analysis_precompute:
+      choice: >
+        scripts/precompute_gap.py runs ask() 3×8=24 times (one per section ×
+        source_type), writes results/gap_analysis.json with status="TODO".
+        Student fills status by hand after reading answers.
+      reasoning: >
+        Gap analysis generation takes ~15-20 min (24 Ollama calls × ~15-20s
+        each). Running it live in Streamlit would make the tab unusable.
+        Precomputing once and displaying the file is the right pattern per
+        CLAUDE.local.md. Status labels (echoed/endorsed/committed/unaddressed)
+        require human judgment — they cannot be automated.
+
+    st_cache_resource:
+      choice: >
+        config, corpus stats, ChromaDB collection all loaded with
+        @st.cache_resource (singleton across sessions).
+      reasoning: >
+        ChromaDB client initialization + model loading takes ~5s on first call.
+        cache_resource keeps the connection open for the lifetime of the server
+        process, making subsequent tab switches instant.
+
+tasks:
+  task_1:
+    name: Refactor rag/ask.py
+    details: |
+      Change ask() return type from str to tuple[str, list[dict]].
+      Update CLI: answer, _ = ask(...)
+      rag/eval.py uses its own generate_answer() — no change needed there.
+
+  task_2:
+    name: Create demo assets
+    details: |
+      demo/cma_sections.json  — 8 CMA sections with section_id, title, card_text,
+                                 ask_text, keyword_prediction
+      demo/cached_classify.json — per section_id: keyword_prediction, gemma4_prediction,
+                                  gemma4_elapsed_s
+      demo/cached_ask.json     — one full cached question+answer+passages for Tab 2 fallback
+
+  task_3:
+    name: Create app/streamlit_app.py
+    details: |
+      Launch: uv run --no-sync streamlit run app/streamlit_app.py
+
+      Sidebar: title, classifiable cards (506), chunk count + per-source-type breakdown,
+               model info, OLLAMA_HOST, SYNC_VERSION.
+
+      Tab 1 Classify: selectbox of 8 CMA sections + "(paste your own)"; keyword_classify()
+               always runs locally; gemma4 via classify_ollama() wrapped in try/except;
+               two-column badge display; disagreement callout when methods differ.
+
+      Tab 2 Ask: text_input + source filter selectbox + k slider; retrieve_passages()
+               from ChromaDB then generate_answer() via Ollama; st.expander per passage
+               with org/study/page/distance/text/source_url link; fallback to cached_ask.json.
+
+      Tab 3 Eval: glob results/eval_summary_*.json → dataframe sorted by accuracy;
+               st.bar_chart of macro_f1_support10; confusion_zeroshot_gemma4-12b.png;
+               reading guide. No computation.
+
+      Tab 4 Gap: load results/gap_analysis.json (warn if missing with run command);
+               selectbox of 8 sections; 3 columns (hesa_brief / hesa_report / gov_response)
+               each with status badge + answer snippet + passage org/snippet/link.
+
+  task_4:
+    name: Create scripts/precompute_gap.py
+    details: |
+      For each of 8 CMA sections × 3 source_type filters: call ask(ask_text, filter, k=3).
+      Write results/gap_analysis.json with answers + passages + status="TODO".
+      Run time: ~20 min. Must set OLLAMA_HOST before running.
+
+  task_5:
+    name: Create app/README
+    details: |
+      Document: launch command, tab descriptions, prerequisites (build_index, precompute_gap),
+      offline fallback behaviour, torch wheel issue (why --no-sync is required on this Mac).
+
+integration_steps:
+  - rag/ask.py refactored — callers that used return value as str must unpack tuple
+  - rag/eval.py unaffected (uses its own generate_answer, not ask())
+  - app/ and scripts/ are new directories — no changes to src/, retrieval/, or instructor code
+  - results/gap_analysis.json is gitignored (large, regenerable) — add to .gitignore after precompute
+  - demo/ assets are committed (small, stable, needed for offline demo)
+
+evaluation_plan:
+  metrics:
+    - All 4 tabs render without errors (verified via Streamlit health check)
+    - keyword_classify passes 8/8 known-answer tests
+    - Tab 3 loads all 8 eval_summary_*.json files correctly
+    - Tab 4 shows warning correctly when gap_analysis.json is absent
+  verified: true
+
+results:
+  app_launch: "Clean boot on port 8503, health check OK, no Python errors in log"
+  keyword_tests: "8/8 correct"
+  eval_tab: "8 methods loaded, bar chart and confusion matrix rendered"
+  deprecation_fix: "use_container_width replaced with width='stretch' (Streamlit 1.57.0)"
+
+verification:
+  cli:
+    - "uv run --no-sync python -m rag.build_index   # if chroma/ not present"
+    - "export OLLAMA_HOST=http://100.85.195.54:11434"
+    - "uv run --no-sync streamlit run app/streamlit_app.py"
+    - "Open http://localhost:8501"
+    - "Tab 3 (Eval): confirm 8-method table and bar chart appear without clicking anything"
+    - "Tab 4 (Gap): confirm warning banner with precompute command appears"
+    - "Tab 1 (Classify): select any CMA section, click Classify — keyword badge appears instantly"
+    - "Tab 2 (Ask): enter a question, click Ask — passages expand with org + source link"
+  precompute:
+    - "export OLLAMA_HOST=http://100.85.195.54:11434"
+    - "uv run --no-sync python scripts/precompute_gap.py"
+    - "Open results/gap_analysis.json and fill status fields by hand"
+    - "Reload app — Tab 4 should now show 3 columns with passages and status badges"

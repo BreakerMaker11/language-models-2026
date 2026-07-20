@@ -488,3 +488,59 @@ tuning opportunity, not a faithfulness failure.
 reboots indefinitely. Rebuild only needed on corpus sync (SYNC_VERSION change) or
 embedding model change. Embedding runs locally on CPU (all-MiniLM-L6-v2 is ~22MB;
 2543 chunks index in ~2 min on 2018 i7). GPU is reserved for Ollama/gemma4:12b.
+
+## Week 8 — Streamlit Demo App (2026-07-20)
+
+**ask() signature refactored (2026-07-20):** `rag/ask.py` — `ask()` now returns
+`(answer: str, passages: list[dict])` instead of just `str`. Retrieval runs once;
+the caller receives both the generated answer and the retrieved passages without a
+second ChromaDB round-trip. CLI updated to `answer, _ = ask(...)`. `rag/eval.py`
+unaffected (uses its own internal `generate_answer()` function, not `ask()`).
+
+**Streamlit app built:** `app/streamlit_app.py` — four tabs, launched via
+`uv run --no-sync streamlit run app/streamlit_app.py`. The `--no-sync` flag is
+required on this Mac (macOS 15, x86_64) because torch==2.11.0 pinned for the
+Linux GPU server has no wheel for this platform. Documented in app/README.
+App is fully read-only against gold, predictions, and instructor code.
+
+**Sidebar:** title, classifiable cards (506 from corpus.csv), chunk count with
+per-source-type breakdown (hesa_brief=2242, hesa_report=221, gov_response=80),
+models (gemma4:12b generation / all-MiniLM-L6-v2 embeddings), OLLAMA_HOST,
+SYNC_VERSION contents. Stats loaded with @st.cache_resource.
+
+**Tab 1 Classify:** 8 CMA section selectbox + paste-your-own text_area. Two
+classifiers side-by-side: keyword_classify() (local, always fast, approximates
+topic_rules.yaml using strong keywords from codebook) and gemma4:12b zero-shot
+via classify_ollama() (requires OLLAMA_HOST). Disagreement callout when methods
+differ. Offline fallback from demo/cached_classify.json. keyword_classify passes
+8/8 known-answer tests covering all nine topic codes.
+
+**Tab 2 Ask the record:** text_input + source filter selectbox + k slider (1-5).
+On click: spinner → retrieve_passages() from ChromaDB → generate_answer() via
+Ollama → answer in markdown + st.expander per passage (org, study, page/§,
+distance, full text, clickable source_url). Offline fallback from
+demo/cached_ask.json. ChromaDB collection loaded once with @st.cache_resource.
+
+**Tab 3 Evaluation:** globs results/eval_summary_*.json → DataFrame sorted by
+accuracy (8 methods). Bar chart of macro_f1_support10. confusion_zeroshot_gemma4-12b.png
+displayed. Entirely disk-reads — no inference. Reading guide explains three F1
+variants and other_none_recall.
+
+**Tab 4 Gap analysis:** loads results/gap_analysis.json (shows warning with exact
+precompute command if absent). Selectbox of 8 CMA sections; 3-column layout
+(hesa_brief / hesa_report / gov_response) with status badge (echoed/endorsed/
+committed/unaddressed/TODO), answer snippet, passage org + snippet + source_url link.
+
+**Demo assets:** demo/cma_sections.json (8 CMA ministerial letter sections, each
+with section_id, title, card_text, ask_text, keyword_prediction); demo/cached_classify.json
+(per-section offline predictions); demo/cached_ask.json (one full cached Q&A with
+passages for Tab 2 fallback). Document is deliberately out-of-distribution (multi-topic
+letter) to show the limits of single-label classification.
+
+**Precompute script:** scripts/precompute_gap.py — runs ask() 24 times (8 sections ×
+3 source_type filters, k=3), writes results/gap_analysis.json with status="TODO".
+Status must be filled by hand after reading answers (echoed/endorsed/committed/
+unaddressed). Estimated run time ~20 min.
+
+**Deprecation fix:** `use_container_width=True` → `width='stretch'` throughout
+(Streamlit 1.57.0 deprecation, effective 2025-12-31).

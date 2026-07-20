@@ -26,7 +26,7 @@ categories:
 
 # ── Health Policy Brief Classifier ──────────────────────────────────────────
 health:
-  default_model: "gemma4:12b"
+  default_model: "gemma2:2b"
   models:
     "gemma4:12b":
       temperature: 0.0

@@ -25,7 +25,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 CHROMA_DIR = PROJECT_ROOT / "chroma"
 COLLECTION_NAME = "hesa_chunks"
 EMBED_MODEL = "all-MiniLM-L6-v2"
-GENERATION_MODEL = "gemma4:12b"
+GENERATION_MODEL = "gemma2:2b"
 NUM_CTX = 16384  # generation needs more room than classification
 
 SYSTEM_PROMPT = (
@@ -66,7 +66,11 @@ def _build_prompt(question: str, passages: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def ask(question: str, source_type_filter: str | None = None, k: int = 3) -> str:
+def ask(
+    question: str,
+    source_type_filter: str | None = None,
+    k: int = 3,
+) -> tuple[str, list[dict]]:
     """
     Retrieve relevant passages and generate a grounded answer.
 
@@ -76,7 +80,10 @@ def ask(question: str, source_type_filter: str | None = None, k: int = 3) -> str
         k: Number of passages to include in the prompt (top-k of n_results=5).
 
     Returns:
-        Answer string from the model.
+        (answer, passages) — answer is the model response; passages is the list
+        of retrieved chunks (each has doc_id, text, metadata, distance).
+        Retrieval runs once; passages are returned so callers can display them
+        without a second round-trip to ChromaDB.
     """
     if source_type_filter and source_type_filter not in VALID_FILTERS:
         raise ValueError(f"source_type_filter must be one of {VALID_FILTERS} or None")
@@ -108,7 +115,7 @@ def ask(question: str, source_type_filter: str | None = None, k: int = 3) -> str
         options={"num_ctx": NUM_CTX, "temperature": 0.0},
         keep_alive="30m",
     )
-    return resp.response.strip()
+    return resp.response.strip(), passages
 
 
 def _print_passages(passages: list[dict]) -> None:
@@ -179,7 +186,7 @@ def main() -> None:
     print(f"Filter:   {filter_label}  |  k={args.k}  |  model={GENERATION_MODEL}")
     print(f"{'─'*60}\n")
 
-    answer = ask(args.question, source_type_filter=args.source_type_filter, k=args.k)
+    answer, _ = ask(args.question, source_type_filter=args.source_type_filter, k=args.k)
     print("Answer:")
     print(answer)
     print(f"\n{'─'*60}")

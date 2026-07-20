@@ -1,0 +1,62 @@
+HESA Policy Explorer — Streamlit App
+=====================================
+
+Launch
+------
+    export OLLAMA_HOST=http://100.85.195.54:11434
+    uv run --no-sync streamlit run app/streamlit_app.py
+
+The `--no-sync` flag is required on this Mac. See "torch wheel issue" below.
+
+
+Tabs
+----
+1. Classify       — Select a CMA section or paste text; keyword rules vs gemma4:12b
+2. Ask the record — RAG Q&A over the HESA corpus with source-type filtering
+3. Evaluation     — Pre-computed classifier results table + confusion matrix
+4. Gap analysis   — CMA sections cross-referenced against briefs/reports/responses
+
+
+Prerequisites
+-------------
+Before launching the app, build the ChromaDB index if not already present:
+
+    uv run --no-sync python -m rag.build_index
+
+To populate the Gap Analysis tab, run the precompute script (takes ~10 min):
+
+    export OLLAMA_HOST=http://100.85.195.54:11434
+    uv run --no-sync python scripts/precompute_gap.py
+
+Then open results/gap_analysis.json and fill in each "status" field by hand:
+valid values are: echoed / endorsed / committed / unaddressed
+
+
+Offline fallback
+----------------
+If OLLAMA_HOST is not set or the remote server is unreachable:
+- Tab 1 (Classify): shows a cached gemma4 prediction from demo/cached_classify.json
+- Tab 2 (Ask): shows a cached answer + passages from demo/cached_ask.json
+- Tabs 3 and 4 load from disk only and always work offline
+
+
+torch wheel issue (macOS 15 x86_64)
+-------------------------------------
+This project pins torch==2.11.0 in pyproject.toml for compatibility with the
+Linux GPU server (RTX 3060, CUDA). That version has no wheel for
+macosx_15_0_x86_64 (the 2018 MacBook running macOS 15 on Intel).
+
+Running `uv sync` on this Mac fails with:
+    Distribution `torch==2.11.0` can't be installed because it doesn't have a
+    source distribution or wheel for the current platform
+
+Workaround: use `uv run --no-sync` for all commands on this Mac. This skips
+the sync step and runs with whatever packages are already installed in .venv.
+
+The app does not import torch directly. sentence-transformers (used by
+ChromaDB's SentenceTransformerEmbeddingFunction) imports torch internally, but
+the installed version in .venv is compatible with this machine's CPU — only
+the pinned 2.11.0 wheel is missing, not torch itself.
+
+Do NOT run `uv sync` on this Mac — it will fail. The .venv is managed from
+the Linux server where the pinned torch wheel is available.

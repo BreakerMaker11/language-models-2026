@@ -1,0 +1,48 @@
+{
+  "_note": "Offline fallback for Tab 2 Ask the record. Shown when Ollama is unreachable.",
+  "question": "What did stakeholders recommend about credential recognition for internationally trained physicians?",
+  "filter": "hesa_brief",
+  "k": 3,
+  "answer": "Stakeholders recommended scaling up Practice-Ready Assessment programs to allow experienced international physicians to practice sooner [hesa451_impact_of_immigration_policy_0018]. The Canadian Medical Association called for streamlining licensing pathways that do not compromise standards of care and providing targeted resources to provinces and territories to expand assessment capacity [hesa451_impact_of_immigration_policy_0018]. World Education Services recommended that the federal government establish frameworks and funding for modernized registration processes and supervised clinical experience models tailored to specific health occupations [hesa451_impact_of_immigration_policy_0023].",
+  "passages": [
+    {
+      "doc_id": "hesa451_impact_of_immigration_policy_0018",
+      "text": "When newcomers are included in our health workforce, staffing gaps begin to close. Another, a UK-trained specialist with 27 years of distinguished experience, still cannot qualify for permanent residency — a frustrating barrier that undermines both his contributions and Canada's healthcare capacity. Scaling up proven expedited licensing pathways that do not compromise standards of care is essential.",
+      "metadata": {
+        "org": "Canadian Medical Association",
+        "study_or_consultation_title": "Impact of Immigration Policy on Healthcare and Barriers to Integrating Internationally Trained Professionals",
+        "source_type": "hesa_brief",
+        "page_range": "2-3",
+        "section_title": "",
+        "source_url": "https://www.ourcommons.ca/Content/Committee/451/HESA/Brief/BR15551234/br-external/CanadianMedicalAssociation-e.pdf"
+      },
+      "distance": 0.4728
+    },
+    {
+      "doc_id": "hesa451_impact_of_immigration_policy_0023",
+      "text": "Establish federal frameworks and provide funding to provincial stakeholders to implement and/or expand proven practices, including modernized registration processes, supervised clinical experience and assessment models, and career navigation supports tailored to specific occupations.",
+      "metadata": {
+        "org": "World Education Services",
+        "study_or_consultation_title": "Impact of Immigration Policy on Healthcare and Barriers to Integrating Internationally Trained Professionals",
+        "source_type": "hesa_brief",
+        "page_range": "6",
+        "section_title": "",
+        "source_url": "https://www.ourcommons.ca/Content/Committee/451/HESA/Brief/BR15551890/br-external/WorldEducationServices-e.pdf"
+      },
+      "distance": 0.4625
+    },
+    {
+      "doc_id": "hesa451_impact_of_immigration_policy_0013",
+      "text": "In 2023/2024, there were 2,402 visa fellow trainees providing high-level clinical care. It is estimated that there are 13,000 foreign-trained physicians in Canada who are not practicing medicine; some may be unable to practice because their foreign training does not satisfy Canadian standards.",
+      "metadata": {
+        "org": "Association of Faculties of Medicine of Canada",
+        "study_or_consultation_title": "Impact of Immigration Policy on Healthcare and Barriers to Integrating Internationally Trained Professionals",
+        "source_type": "hesa_brief",
+        "page_range": "4-5",
+        "section_title": "",
+        "source_url": "https://www.ourcommons.ca/Content/Committee/451/HESA/Brief/BR15551567/br-external/AssociationFacultiesMedicineCanada-e.pdf"
+      },
+      "distance": 0.4138
+    }
+  ]
+}
