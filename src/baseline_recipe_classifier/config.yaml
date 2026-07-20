@@ -85,7 +85,10 @@ health:
       description: >
         health of women and reproductive health: maternal
         care, breast and cervical cancer, menopause, endometriosis, contraception,
-        midwifery.
+        midwifery. INCLUDES breast implant safety, oversight, and patient
+        experience briefs — even when medical devices or drugs are mentioned,
+        if the primary subject is women's health outcomes use womens_health NOT
+        pharmacare.
     mental_health:
       description: >
         mental illness and psychiatric care: mood and anxiety
@@ -114,6 +117,10 @@ health:
       description: >
         real health-policy content that fits no topic above, or
         content that is not primarily about a health topic (e.g. civil-liberties
-        arguments about mandates). Do NOT force-fit; this label is information.
-        (Note: multi-topic cards are NOT other_none — they get the best-fit topic
-        under Rule 5.)
+        arguments about mandates). INCLUDES individual citizen grievances about
+        COVID restrictions, mask mandates, or vaccine requirements framed as
+        personal-freedom or civil-liberties arguments — even when vaccine or
+        illness terms appear, if the primary concern is individual rights rather
+        than population health policy, use other_none NOT public_health.
+        Do NOT force-fit; this label is informative. (Note: multi-topic cards
+        are NOT other_none — they get the best-fit topic under Rule 5.)

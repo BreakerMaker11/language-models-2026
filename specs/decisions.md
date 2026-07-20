@@ -401,7 +401,7 @@ womens_health F1=0.553). Primary targets: other_none recall and womens_health F1
 Retrieval smoke test on "opioid overdose harm reduction" returns opioid-epidemic study briefs
 at distance ≤0.38 — semantically correct.
 
-**Week 3 RAG result (2026-07-19):** RAG regressed vs zero-shot baseline: macro-F1 0.570 vs 0.621.
+**Week 3 RAG result (2026-07-19):** RAG regressed vs zero-shot baseline: macro-F1 0.570 vs 0.621 (deduped predictions, 2 parse failures remaining).
 other_none recall collapsed from 0.413 → 0.109. Root cause: other_none boundary anchors are COVID
 public-complaint letters; the actual other_none failure cluster is breast-cancer-screening
 submissions (46 gold cards) which are semantically indistinguishable from womens_health to the
@@ -410,3 +410,30 @@ cards; the anchors provide no corrective signal because they look nothing like t
 The hard boundary between womens_health and other_none for breast-screening cards is a labeling
 rule (personal story / civil-liberties framing → other_none; policy brief → womens_health), not
 a semantic distinction — confirmed as a limitation of the RAG approach for this corpus.
+
+## Week 4 — Prompt Tuning (2026-07-19)
+
+**Failure mode diagnosis (from confusion matrix):** Two dominant zero-shot errors:
+(1) 21 other_none cards mislabelled public_health — COVID individual grievances contain
+vaccine/sickness keywords but primary concern is civil-liberties, not population health policy.
+(2) 11 womens_health cards mislabelled pharmacare — breast implant briefs mention medical devices
+and drugs, triggering pharmacare even though primary subject is women's health outcomes.
+
+**Approach — definition sharpening only:** Added explicit boundary notes to config.yaml for
+other_none (COVID civil-liberties complaints → other_none even if vaccine terms appear) and
+womens_health (breast implant oversight → womens_health not pharmacare even if devices/drugs
+mentioned). No few-shot examples added — week 3 showed that approach hurt macro-F1.
+
+**RULE3 added (2026-07-19):** Explicit decision rule injected into every prompt after RULE2:
+"If a document frames vaccine policy or health measures primarily in terms of personal freedom,
+civil liberties, or individual rights rather than population-level health policy, classify as
+other_none." Student verified no genuine public_health card in corpus combines personal-freedom
+and vaccine language together — pattern is unique to individual COVID grievance submissions.
+
+**Standalone classifier:** retrieval/promptv2_classify.py — copy of main.py with sharpened
+definitions + RULE3. main.py untouched. Method name: promptv2_gemma4-12b. Adds --eval-prompt
+mode for fast iteration on a hand-labeled eval set. Full gold run in progress (2026-07-19).
+
+**Evaluation plan:** Compare per-class F1 for other_none and womens_health against zero-shot
+baseline (other_none F1≈0.45, womens_health F1=0.553). Threshold: +0.1 on both to proceed to
+week 5 LoRA adapters. Gold set remains frozen — no prompt iteration against gold cards.
