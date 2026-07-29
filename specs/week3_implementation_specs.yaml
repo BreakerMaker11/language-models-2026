@@ -1,0 +1,254 @@
+# Week 3 Transformer Architecture / Vector Store & RAG Classification - Implementation Specs
+
+approach:
+  summary: >
+    Build a ChromaDB vector store over 506 HESA corpus cards, add hand-picked boundary
+    anchor examples targeting two known gemma4:12b failure directions, and implement a
+    separate RAG classifier that retrieves 5 dynamic few-shot examples per card and
+    prepends 4 fixed anchors to the prompt — without touching main.py.
+
+  decisions:
+    vector_store_backend:
+      choice: ChromaDB with sentence-transformers all-MiniLM-L6-v2 embedding function
+      reasoning: >
+        ChromaDB handles batched encoding internally, reducing boilerplate. all-MiniLM-L6-v2
+        was validated in week 2 as the best available general-purpose model for this domain.
+        Consistent embedding model across retrieval and classification ensures semantic
+        alignment between stored vectors and query vectors.
+
+    corpus_coverage:
+      choice: All 506 rows from corpus.csv including unlabeled
+      reasoning: >
+        Unlabeled rows still carry semantic content useful for retrieval similarity;
+        excluding them would reduce coverage without a clear benefit. They are filtered
+        out post-retrieval when building the few-shot prompt (no label to show the model),
+        but kept in the store for potential future metadata-filtered retrieval in week 6.
+
+    metadata_deferred:
+      choice: card_text only stored in ChromaDB this week; metadata deferred to week 6
+      reasoning: >
+        Keeping the store simple for week 3 allows focusing on retrieval quality.
+        topic_seed, source_type, and study_title will be added as ChromaDB metadata
+        fields in week 6 to enable filtered retrieval by topic or document type.
+
+    boundary_anchors:
+      choice: >
+        4 hand-picked fixed examples in retrieval/boundary_anchors.yaml, always injected
+        into every prompt regardless of query
+      reasoning: >
+        Zero-shot evaluation identified two specific failure directions: other_none cards
+        being labelled public_health, and womens_health cards being labelled pharmacare.
+        Fixed anchors guarantee the model sees a corrective example for each failure
+        direction on every card, not just when retrieval happens to surface one.
+        2 x other_none (mislabelled as public_health) + 2 x womens_health (mislabelled
+        as pharmacare) — targeting the confusion direction, not symmetric pairs.
+
+    dynamic_retrieval_count:
+      choice: Top-5 results from ChromaDB per query
+      reasoning: >
+        5 dynamic + 4 fixed = 9 total few-shot examples. Compact enough to stay well
+        within gemma4:12b's 8192 token context window while providing enough diversity
+        to surface topically relevant examples.
+
+    prompt_structure:
+      choice: >
+        4 fixed anchors first (label + truncated card_text), then 5 dynamic examples
+        (label + truncated card_text, unlabeled rows filtered out), then the card to classify
+      reasoning: >
+        Anchors first establishes the corrective signal before any dynamic noise.
+        Dynamic examples provide topic-relevant context. Unlabeled rows filtered
+        post-retrieval so the model never sees an example without a label.
+
+    separate_classifier_file:
+      choice: retrieval/rag_classify.py — main.py is NOT modified
+      reasoning: >
+        Keeps the zero-shot baseline intact and runnable for comparison. The RAG
+        classifier is an experimental extension, not a replacement.
+
+tasks:
+  task_1:
+    name: Create retrieval/vector_store.py
+    details: |
+      File: retrieval/vector_store.py
+
+      from chromadb import Client  # or PersistentClient for disk storage
+      from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
+
+      class HealthVectorStore:
+          COLLECTION_NAME = "hesa_cards"
+
+          def __init__(self, persist_dir: str = ".chromadb"):
+              import chromadb
+              self._client = chromadb.PersistentClient(path=persist_dir)
+              self._ef = SentenceTransformerEmbeddingFunction("all-MiniLM-L6-v2")
+              self._col = self._client.get_or_create_collection(
+                  self.COLLECTION_NAME,
+                  embedding_function=self._ef,
+              )
+
+          def add(self, doc_id: str, card_text: str) -> None:
+              """Add a single card. Skips if doc_id already exists."""
+              if self._col.get(ids=[doc_id])["ids"]:
+                  return
+              self._col.add(ids=[doc_id], documents=[card_text])
+
+          def add_batch(self, records: list[dict]) -> None:
+              """Add many cards at once. Each dict must have doc_id and card_text."""
+              existing = set(self._col.get()["ids"])
+              new = [r for r in records if r["doc_id"] not in existing]
+              if not new:
+                  return
+              self._col.add(
+                  ids=[r["doc_id"] for r in new],
+                  documents=[r["card_text"] for r in new],
+              )
+
+          def query(self, card_text: str, n_results: int = 5) -> list[dict]:
+              """Return n_results nearest cards as list of {doc_id, card_text, distance}."""
+              res = self._col.query(query_texts=[card_text], n_results=n_results)
+              return [
+                  {"doc_id": i, "card_text": d, "distance": dist}
+                  for i, d, dist in zip(
+                      res["ids"][0], res["documents"][0], res["distances"][0]
+                  )
+              ]
+
+          def count(self) -> int:
+              return self._col.count()
+
+      Index script (run once to populate):
+          uv run python -c "
+          import pandas as pd
+          from retrieval.vector_store import HealthVectorStore
+          store = HealthVectorStore()
+          df = pd.read_csv('data/health/corpus.csv')
+          store.add_batch(df[['doc_id','card_text']].to_dict('records'))
+          print(f'Indexed {store.count()} cards')
+          "
+
+  task_2:
+    name: Create retrieval/boundary_anchors.yaml
+    details: |
+      File: retrieval/boundary_anchors.yaml
+      Populate with 4 hand-picked cards. Schema:
+
+      - card_text: "<full or truncated card text>"
+        label: other_none
+        note: "other_none anchor — was mislabelled public_health by gemma4:12b"
+
+      - card_text: "<full or truncated card text>"
+        label: other_none
+        note: "other_none anchor — was mislabelled public_health by gemma4:12b"
+
+      - card_text: "<full or truncated card text>"
+        label: womens_health
+        note: "womens_health anchor — was mislabelled pharmacare by gemma4:12b"
+
+      - card_text: "<full or truncated card text>"
+        label: womens_health
+        note: "womens_health anchor — was mislabelled pharmacare by gemma4:12b"
+
+      card_text can be truncated to ~100 words to save prompt tokens.
+      Student populates this file with their hand-picked examples.
+
+  task_3:
+    name: Create retrieval/rag_classify.py
+    details: |
+      File: retrieval/rag_classify.py
+      Run: export OLLAMA_HOST=http://100.85.195.54:11434
+           uv run --no-sync python retrieval/rag_classify.py --all-gold [--model gemma4:12b] [--resume]
+
+      Key logic:
+
+      1. Load config (same as main.py), boundary_anchors.yaml, corpus.csv, gold_test.csv
+      2. Init HealthVectorStore (reads from .chromadb — must be indexed first)
+      3. Load corpus topic_seed lookup: {doc_id: topic_seed} for labelling retrieved examples
+      4. For each gold card:
+         a. Retrieve 5 nearest from store
+         b. Filter retrieved: drop any with topic_seed == 'unlabeled' or not in VALID_CODES
+            (take up to 5 that survive; fewer is fine)
+         c. Build few-shot prompt:
+            - Header: "Here are example documents with their topic labels:"
+            - 4 anchor examples: "Label: {label}\nDocument: {card_text[:400]}\n"
+            - Up to 5 dynamic examples: "Label: {topic_seed}\nDocument: {card_text[:400]}\n"
+            - Then: same format as main.py (definitions + RULE2 + valid codes + card to classify)
+         d. Call ollama.generate() with same model/options as main.py
+         e. Parse with same logic as main.py (exact → last line → substring)
+         f. Append row to results/predictions_rag_{safe_model}_gold.csv immediately
+
+      Output columns: identical to main.py OUTPUT_COLS
+      safe_model: model name with : replaced by -  (e.g. gemma4-12b)
+      Resume: skip doc_ids already in output CSV with valid predicted_label
+
+      Import parse logic from main.py or duplicate it — do not import main.py as a module
+      to avoid side effects from its argparse setup.
+
+  task_4:
+    name: Run harness and compare to baseline
+    details: |
+      After rag_classify.py completes:
+
+      uv run --no-sync python -m eval.harness \
+        --predictions results/predictions_rag_gemma4-12b_gold.csv \
+        --method rag_gemma4-12b
+
+      Compare results/eval_summary_rag_gemma4-12b.json against
+      results/eval_summary_zeroshot_gemma4-12b.json.
+
+      Focus metrics:
+        - other_none: recall (was 0.413 zero-shot)
+        - public_health: precision (check it didn't absorb other_none cards)
+        - womens_health: F1 (was 0.553 zero-shot)
+        - pharmacare: precision (check it didn't absorb womens_health cards)
+        - macro_f1_all: must not regress below 0.62
+
+integration_steps:
+  - retrieval/vector_store.py is standalone — no changes to existing src/ files
+  - retrieval/rag_classify.py imports config loader from main.py's load_config()
+    and VALID_CODES / SYSTEM / RULE2 constants; import these explicitly, do not
+    call main() or use argparse from main.py
+  - ChromaDB persists to .chromadb/ at project root; add .chromadb/ to .gitignore
+  - results/predictions_rag_gemma4-12b_gold.csv feeds directly into existing harness
+    with no schema changes required
+
+evaluation_plan:
+  metrics:
+    - macro_f1_all (all 9 classes)
+    - per-class F1 for public_health, other_none, womens_health, pharmacare
+    - other_none recall (primary anchor A target)
+    - womens_health F1 (primary anchor B target)
+  dataset_size: 217 gold cards (gold_test.csv, frozen)
+  baseline: results/eval_summary_zeroshot_gemma4-12b.json (macro_f1_all=0.6212, other_none recall=0.413, womens_health F1=0.553)
+
+reference_materials:
+  notebook: notebooks/week3_transformer_architecture.ipynb
+  prior_results: results/eval_summary_zeroshot_gemma4-12b.json
+  corpus: data/health/corpus.csv
+  gold: data/health/gold_test.csv
+
+success_criteria:
+  minimum: >
+    Vector store indexes all 506 corpus cards. rag_classify.py runs to completion
+    on all 217 gold cards. At least one of other_none recall or womens_health F1
+    improves over zero-shot baseline without macro_f1_all dropping below 0.62.
+  good: >
+    Both boundary class pairs improve. other_none recall > 0.50 (up from 0.413).
+    womens_health F1 > 0.60 (up from 0.553). No other class regresses by more than 0.05.
+  excellent: >
+    macro_f1_all improves over 0.6212. Both targeted boundary zones show clear
+    improvement, confirming that fixed anchors + dynamic retrieval outperforms
+    zero-shot on known failure cases.
+
+verification:
+  cli:
+    - "export OLLAMA_HOST=http://100.85.195.54:11434"
+    - "Index the store: uv run --no-sync python -c \"import pandas as pd; from retrieval.vector_store import HealthVectorStore; store=HealthVectorStore(); df=pd.read_csv('data/health/corpus.csv'); store.add_batch(df[['doc_id','card_text']].to_dict('records')); print(store.count(), 'cards indexed')\""
+    - "Confirm output: '506 cards indexed'"
+    - "Test retrieval: uv run --no-sync python -c \"from retrieval.vector_store import HealthVectorStore; store=HealthVectorStore(); print(store.query('opioid overdose harm reduction', n_results=3))\""
+    - "Confirm 3 results returned with doc_id, card_text, distance fields"
+    - "uv run --no-sync python retrieval/rag_classify.py --all-gold --model gemma4:12b"
+    - "uv run --no-sync python -m eval.harness --predictions results/predictions_rag_gemma4-12b_gold.csv --method rag_gemma4-12b"
+    - "Check console: other_none recall and womens_health F1 vs baseline"
+  streamlit:
+    - "This week's deliverable is a CLI evaluation pipeline — no Streamlit changes required"
+    - "results/predictions_rag_gemma4-12b_gold.csv and eval_summary_rag_gemma4-12b.json are the artifacts; confirm both exist"

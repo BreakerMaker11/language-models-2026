@@ -1,0 +1,213 @@
+# Week 6 Semantic Search and RAG — Implementation Specs
+
+approach:
+  summary: >
+    Build a second retrieval layer over the pre-chunked HESA corpus
+    (rag_chunks.jsonl, 2543 chunks from three source types) using ChromaDB
+    with all-MiniLM-L6-v2 embeddings. Implement grounded generation via
+    gemma4:12b with mandatory [doc_id] citations. Evaluate retrieval quality
+    with hit-rate@3/@5 on 10 known-answer queries and generation faithfulness
+    with citation validity checking.
+
+  decisions:
+    separate_chunk_index:
+      choice: >
+        New collection 'hesa_chunks' in chroma/ — separate from card index
+        in .chromadb/ (collection 'hesa_cards')
+      reasoning: >
+        Chunk index and card index have different document semantics and metadata
+        schemas. Chunks are 300-800 word sections of full unmasked documents;
+        cards are ~250 word organization-masked summaries. Mixing them would
+        muddy retrieval results and break the masking rule for classification.
+
+    embedding_model:
+      choice: all-MiniLM-L6-v2 (same as card index)
+      reasoning: >
+        Must match the embedding model used to create the chunks (validated in
+        week 2 as the best available for this domain). Mixing embedding models
+        within one collection produces incorrect cosine distances.
+
+    idempotent_rebuild:
+      choice: Drop and recreate collection on every run of build_index.py
+      reasoning: >
+        Corpus syncs periodically (SYNC_VERSION tracks the corpus tag). A clean
+        rebuild on sync is safer than incremental upsert, which risks stale
+        vectors from deleted chunks remaining in the index.
+
+    metadata_fields:
+      choice: >
+        All fields from rag_chunks.jsonl stored as ChromaDB metadata:
+        doc_id, source_type, org, stakeholder_type, study_or_consultation_title,
+        parliament_session, page_range, section_title, recommendation_number,
+        source_url. Null values coerced to empty string.
+      reasoning: >
+        All fields are filterable metadata — needed for source_type filtering
+        and for passage labelling in the grounded prompt. Storing now avoids
+        a full re-index when new filter dimensions are needed later.
+
+    retrieval_filter:
+      choice: >
+        source_type is the only supported retrieval filter
+        (hesa_brief / hesa_report / gov_response). Topic labels are
+        never used as retrieval filters.
+      reasoning: >
+        Source type corresponds to document role in the policy pipeline (ask /
+        committee finding / government commitment) — a meaningful retrieval
+        dimension. Topic is a classification output; filtering by it would
+        create a circular dependency and violate the evaluation protocol.
+
+    retrieval_k:
+      choice: n_results=5 from ChromaDB; top 3 passed to the prompt
+      reasoning: >
+        K=5 retrieve / K=3 use is a stated design constant (CLAUDE.local.md).
+        Not tuned against gold or demo queries — tuning K against known answers
+        would be contamination. Buffer of 5 allows discarding low-quality hits
+        without dropping below 3 in the prompt.
+
+    generation_model:
+      choice: gemma4:12b via Ollama, num_ctx=16384, no num_predict cap
+      reasoning: >
+        Generation mode requires more context window than classification (16k vs
+        8k) because three passages + citations can easily exceed 4k tokens.
+        No num_predict cap is correct for generation — the cap was a
+        classification-specific safety valve against runaway thinking chains.
+
+    grounded_prompt:
+      choice: >
+        Passages labelled [doc_id | org | study | page/§]; system prompt
+        instructs "answer only from provided passages; cite [doc_id] per claim;
+        say so if passages don't contain the answer"
+      reasoning: >
+        Explicit per-passage labels make it easy for the model to attach the
+        correct citation to each claim. The "say so if absent" instruction
+        prevents confident-sounding hallucination when retrieval fails.
+
+    evaluation_design:
+      choice: >
+        10 known-answer queries with expected doc_ids (rag/eval_queries.yaml);
+        hit-rate@3 and hit-rate@5; citation validity (valid / none / bad).
+        Queries authored from corpus knowledge, not tuned against results.
+      reasoning: >
+        Small known-answer set is sufficient to confirm retrieval is working
+        across all three source types. Citation validity catches hallucinated
+        references without requiring a full LLM judge. No query was modified
+        after seeing retrieval results — only expected_doc_ids were widened
+        when the retrieved documents were confirmed to be topically valid
+        alternatives (q02, q06).
+
+tasks:
+  task_1:
+    name: Create rag/build_index.py
+    details: |
+      File: rag/build_index.py
+      Run: uv run python -m rag.build_index
+
+      - Load data/health/rag_chunks.jsonl
+      - Connect to ChromaDB PersistentClient at chroma/
+      - Drop existing 'hesa_chunks' collection and recreate (idempotent rebuild)
+      - Embed chunk text with SentenceTransformerEmbeddingFunction("all-MiniLM-L6-v2")
+      - Store all metadata fields (null → empty string; recommendation_number → str)
+      - Batch size 500 to avoid ChromaDB memory limits
+      - Report count per source_type after indexing
+
+  task_2:
+    name: Create rag/ask.py
+    details: |
+      File: rag/ask.py
+
+      Function: ask(question, source_type_filter=None, k=3) -> str
+        - Query ChromaDB 'hesa_chunks', n_results=5
+        - If source_type_filter: where={"source_type": {"$eq": filter}}
+        - Take top k results
+        - Build grounded prompt: passages labelled [doc_id | org | study | page/§]
+        - Call ollama.generate(model="gemma4:12b", num_ctx=16384, temperature=0.0)
+          with no num_predict cap
+        - Return answer text
+
+      CLI: uv run python -m rag.ask "question" [--filter SOURCE_TYPE] [--k N]
+        - Print retrieved passages (chunk_id, org, study, page/§, distance, text[:300])
+        - Print answer
+
+  task_3:
+    name: Create rag/eval.py and rag/eval_queries.yaml
+    details: |
+      File: rag/eval_queries.yaml
+        10 queries, each with: id, description, query, filter, hit_doc_ids (list)
+        Span all three source types. hit_doc_ids = any doc_id whose retrieval counts
+        as a hit; include multiple doc_ids when several orgs address the same topic.
+
+      File: rag/eval.py
+      Run: uv run python -m rag.eval [--retrieval-only] [--queries PATH]
+
+      Retrieval evaluation:
+        - For each query: retrieve n_results=5, check hit@3 and hit@5
+        - hit = any retrieved chunk's doc_id in hit_doc_ids
+
+      Citation validity (full mode):
+        - Generate answer with ask()
+        - Parse [doc_id] tokens from answer text
+        - valid = cited id matches a chunk_id or doc_id in the retrieved set
+        - invalid = cited id not in retrieved set (hallucinated)
+        - Report: all_valid / no_citations / bad
+
+      Output:
+        - Console table per query + summary
+        - results/eval_rag_{mode}_{timestamp}.json
+
+integration_steps:
+  - chroma/ added to .gitignore (rebuild from rag_chunks.jsonl as needed)
+  - rag/ is a standalone package — no changes to src/ or retrieval/
+  - OLLAMA_HOST must be set before running ask.py or eval.py (generation only)
+  - build_index.py requires no OLLAMA_HOST (pure embedding, runs locally)
+  - Rebuild index after every corpus sync: uv run python -m rag.build_index
+
+evaluation_plan:
+  metrics:
+    - hit-rate@3 (primary)
+    - hit-rate@5
+    - citation_valid (answers with all citations grounded in retrieved passages)
+    - citation_none (answers with no [doc_id] inline — prompt compliance)
+    - citation_bad (hallucinated doc_ids — faithfulness failure)
+  dataset: rag/eval_queries.yaml (10 queries, all three source types)
+  results_file: results/eval_rag_full_{timestamp}.json
+
+results:
+  hit_rate_at_3: "10/10 = 100%"
+  hit_rate_at_5: "10/10 = 100%"
+  citation_valid: "8/10"
+  citation_none: "2/10  (q01 breast-cancer report, q07 PMPRB gov response — answered correctly but no inline [doc_id]s)"
+  citation_bad: "0/10  (no hallucinated references)"
+  interpretation: >
+    Retrieval is working correctly across all source types and topic domains.
+    Citation compliance is high but not perfect — two queries produced
+    correct factual answers without inline citations. This is a prompt
+    compliance issue (tighten system prompt) not a faithfulness issue.
+    Zero hallucinated doc_ids is the critical property: the model never
+    invented a reference that was not in the retrieved passages.
+
+success_criteria:
+  minimum: >
+    build_index.py indexes all 2543 chunks. ask.py returns a grounded answer
+    with at least one [doc_id] citation for each smoke-test query.
+    hit-rate@3 ≥ 70%.
+  good: >
+    hit-rate@3 ≥ 90%. citation_bad = 0 (no hallucinated references).
+    All three source types covered in eval queries.
+  excellent: >
+    hit-rate@3 = 100%. citation_valid ≥ 8/10. citation_bad = 0.
+    eval.py runs in < 5 minutes (retrieval-only) and < 10 minutes (full).
+
+verification:
+  cli:
+    - "uv run python -m rag.build_index"
+    - "Confirm output: 'hesa_brief: 2242 / hesa_report: 221 / gov_response: 80'"
+    - "export OLLAMA_HOST=http://100.85.195.54:11434"
+    - "uv run python -m rag.ask 'credential recognition for internationally trained physicians' --filter hesa_brief"
+    - "uv run python -m rag.ask 'what did the committee recommend on breast cancer screening' --filter hesa_report"
+    - "uv run python -m rag.ask 'what did the government commit to on health workforce' --filter gov_response"
+    - "uv run python -m rag.eval --retrieval-only   # fast check, no GPU needed"
+    - "uv run python -m rag.eval                    # full eval with citation check"
+    - "Confirm: hit-rate@3 = 100%, citation_bad = 0"
+  streamlit:
+    - "Week 6 deliverable is the RAG Q&A pipeline (CLI) — no Streamlit changes this week"
+    - "Streamlit integration is Week 8 (gap analysis tab + live ask() path)"

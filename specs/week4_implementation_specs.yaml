@@ -1,0 +1,259 @@
+# Week 4 Prompt Tuning and Evaluation - Implementation Specs
+
+approach:
+  summary: >
+    Sharpen two category boundary definitions in config.yaml and add a negative
+    decision rule to the prompt to fix the two dominant zero-shot failure modes
+    (other_none→public_health and womens_health→pharmacare), then validate on a
+    20-card hand-labeled eval set before committing to a full gold run.
+
+  decisions:
+    definition_sharpening:
+      choice: >
+        Rewrite other_none and womens_health descriptions in config.yaml
+        health.categories to include explicit boundary notes.
+      reasoning: >
+        Zero-shot confusion matrix showed 21 other_none cards mislabeled as
+        public_health and 11 womens_health cards mislabeled as pharmacare.
+        Manual inspection revealed the model is doing the right thing given
+        ambiguous definitions — COVID complaint letters contain vaccine/sickness
+        terms, and breast implant briefs mention devices and drugs. Sharpening
+        the definitions targets the root cause directly rather than pattern-matching
+        via few-shot examples (week 3 showed dynamic retrieval backfired).
+
+    negative_decision_rule:
+      choice: >
+        Add an explicit rule to the user prompt: if a document frames vaccine
+        policy or health measures primarily in terms of personal freedom, civil
+        liberties, or individual rights rather than population-level health
+        policy, classify it as other_none.
+      reasoning: >
+        Student verified no genuine public_health card in the corpus combines
+        personal-freedom and vaccine language together — that pattern is unique
+        to individual COVID grievance submissions. A hard rule eliminates the
+        ambiguity without requiring the model to infer intent from context alone.
+
+    no_few_shot_examples:
+      choice: Definition sharpening only — no few-shot examples added to prompt.
+      reasoning: >
+        Week 3 showed that adding examples (even fixed anchors) hurt macro-F1
+        (0.570 vs 0.621 zero-shot). Definition sharpening targets the root cause
+        (boundary knowledge) without introducing the noise that few-shot injection
+        produced when retrieved examples conflicted with the query card's true label.
+
+    standalone_classifier_file:
+      choice: >
+        Copy main.py to retrieval/promptv2_classify.py and modify the copy.
+        main.py is NOT touched.
+      reasoning: >
+        Keeps the zero-shot baseline intact and runnable for comparison. Same
+        pattern as week 3 (rag_classify.py). Modifications are confined to
+        retrieval/promptv2_classify.py only.
+
+    eval_set_source:
+      choice: >
+        20 cards hand-labeled from corpus.csv (the 506-card full corpus), NOT
+        from gold_test.csv which is frozen.
+      reasoning: >
+        gold_test.csv cannot be used for prompt tuning. Student selects cards
+        from corpus.csv that represent the two failure modes and two correctly-
+        classified classes, then labels them using codebook_v1_1.md definitions.
+
+    eval_distribution:
+      choice: 5 other_none + 5 womens_health + 5 public_health + 5 pharmacare = 20 cards.
+      reasoning: >
+        Covers both confused directions and provides correctly-classified sanity
+        checks (diagonal cells) so a regression is detectable. Mix of off-diagonal
+        hard cases and on-diagonal examples gives a meaningful signal without
+        requiring a full gold run for every prompt iteration.
+
+    success_threshold:
+      choice: +0.1 F1 on both other_none and womens_health vs zero-shot baseline.
+      reasoning: >
+        Zero-shot baseline: other_none F1≈0.45, womens_health F1=0.553.
+        A 0.1 improvement is large enough to be meaningful (not noise on 5 cards)
+        and sets a concrete gate before spending 2 hours on a full gold run.
+
+tasks:
+  task_1:
+    name: Hand-label 20-card prompt_eval.csv from corpus.csv
+    details: |
+      File: data/health/prompt_eval.csv
+      Columns: doc_id, card_text, gold_topic, source
+
+      Selection process:
+      1. Open results/confusion_zeroshot_gemma4-12b.csv to identify misclassified doc_ids
+         in the other_none→public_health and womens_health→pharmacare cells.
+      2. Look up those doc_ids in corpus.csv to find similar cards (same study/topic).
+         Do NOT use gold_test.csv cards — select from corpus.csv only.
+      3. Pick:
+         - 3-4 other_none hard cases: COVID grievance/mandate complaint cards
+         - 1-2 other_none sanity checks: cards correctly classified as other_none
+         - 3-4 womens_health hard cases: breast implant oversight/patient experience cards
+         - 1-2 womens_health sanity checks: clearly womens_health cards (e.g. maternal care)
+         - 3-4 public_health cards: legitimate population-health policy briefs (vaccine programs, AMR, etc.)
+         - 3-4 pharmacare cards: drug coverage/pricing/device approval briefs (no breast implant content)
+      4. Label each card using codebook_v1_1.md definitions. Set source="hand_labeled_week4".
+      5. Save as data/health/prompt_eval.csv.
+
+      Quick check:
+          uv run --no-sync python -c "
+          import pandas as pd
+          df = pd.read_csv('data/health/prompt_eval.csv')
+          print(df['gold_topic'].value_counts())
+          print(f'{len(df)} cards total')
+          "
+
+  task_2:
+    name: Sharpen category definitions in config.yaml
+    details: |
+      File: src/baseline_recipe_classifier/config.yaml
+      Section: health.categories
+
+      Update other_none description to add explicit boundary language, e.g.:
+        other_none: >
+          real health-policy content that fits no topic above, or content that
+          is not primarily about a health topic. INCLUDES: individual citizen
+          grievances about COVID restrictions, mask mandates, or vaccine requirements
+          framed as personal-freedom or civil-liberties arguments — even when
+          vaccine or illness terms appear, if the primary concern is individual
+          rights rather than population health policy, use other_none.
+          Do NOT force-fit; this label is informative. Multi-topic cards get the
+          best-fit topic under Rule 5.
+
+      Update womens_health description to add explicit boundary language, e.g.:
+        womens_health: >
+          health of women and reproductive health: maternal care, breast and
+          cervical cancer, menopause, endometriosis, contraception, midwifery.
+          INCLUDES: breast implant safety, oversight, and patient experience briefs
+          — even when they mention medical devices or drugs, if the primary subject
+          is women's health outcomes, use womens_health not pharmacare.
+
+      Do not change any other category definitions.
+
+  task_3:
+    name: Create retrieval/promptv2_classify.py
+    details: |
+      File: retrieval/promptv2_classify.py
+      Start by copying main.py verbatim, then apply these changes only:
+
+      1. Add RULE3 constant after RULE2:
+           RULE3 = (
+               "Decision rule: if a document frames vaccine policy or public health "
+               "measures primarily in terms of personal freedom, civil liberties, or "
+               "individual rights — rather than as population-level health policy — "
+               "classify it as other_none, regardless of whether vaccine or illness "
+               "terms appear."
+           )
+
+      2. Inject RULE3 into build_prompt() (or equivalent), after RULE2, before
+         the valid codes line.
+
+      3. Change the default method name to "promptv2_gemma4-12b" in the output
+         columns so results are distinguishable from zeroshot runs.
+
+      4. Add --eval-prompt PATH flag:
+         Reads data/health/prompt_eval.csv (columns: doc_id, card_text, gold_topic).
+         Classifies each card using the updated prompt.
+         Writes to results/predictions_promptv2_gemma4-12b_prompteval.csv.
+
+      5. Change --all-gold output file to:
+         results/predictions_promptv2_gemma4-12b_gold.csv
+
+      Do NOT modify main.py.
+
+      Run (eval set):
+          export OLLAMA_HOST=http://100.85.195.54:11434
+          uv run --no-sync python retrieval/promptv2_classify.py \
+            --eval-prompt data/health/prompt_eval.csv --model gemma4:12b
+
+      Then score:
+          uv run --no-sync python -m eval.harness \
+            --predictions results/predictions_promptv2_gemma4-12b_prompteval.csv \
+            --method promptv2_gemma4-12b_prompteval \
+            --gold data/health/prompt_eval.csv
+
+  task_4:
+    name: Verify negative rule fires correctly
+    details: |
+      Quick smoke test before the full eval run:
+
+          export OLLAMA_HOST=http://100.85.195.54:11434
+          uv run --no-sync python retrieval/promptv2_classify.py \
+            --text "As a Canadian citizen I oppose vaccine mandates on the grounds of personal freedom" \
+            --doc-id test_rule3
+
+      Confirm output is other_none (not public_health).
+      If it returns public_health, the rule wording needs adjustment before
+      running the full eval set.
+
+  task_5:
+    name: Full gold run (only if prompt_eval threshold met)
+    details: |
+      Gate: run this only if other_none F1 and womens_health F1 each improved
+      by ≥0.1 on the 20-card prompt_eval set.
+
+      Run:
+          export OLLAMA_HOST=http://100.85.195.54:11434
+          uv run --no-sync python main.py --all-gold --model gemma4:12b \
+            --method promptv2_gemma4-12b
+
+      Score:
+          uv run --no-sync python -m eval.harness \
+            --predictions results/predictions_promptv2_gemma4-12b_gold.csv \
+            --method promptv2_gemma4-12b
+
+      Compare results/eval_summary_promptv2_gemma4-12b.json against
+      results/eval_summary_zeroshot_gemma4-12b.json.
+
+      If threshold NOT met on prompt_eval: add one sentence to problem_statement.md
+      documenting the prompt engineering ceiling and the decision to escalate to
+      LoRA adapters in week 5.
+
+integration_steps:
+  - main.py is NOT modified — zero-shot baseline remains intact and runnable
+  - retrieval/promptv2_classify.py is a self-contained copy of main.py with definition sharpening + RULE3
+  - config.yaml definitions are shared by both classifiers — sharpening them affects both zeroshot and promptv2
+  - No changes to harness.py, eval/, or rag_classify.py
+  - prompt_eval.csv is a tuning artifact; it does NOT replace gold_test.csv for final evaluation
+  - Method name promptv2_gemma4-12b distinguishes results from zeroshot_gemma4-12b in all output files
+
+evaluation_plan:
+  metrics:
+    - other_none F1 (primary target — zero-shot baseline ≈0.45)
+    - womens_health F1 (primary target — zero-shot baseline 0.553)
+    - macro_f1_all (must not regress below 0.60)
+    - public_health precision (watch for other_none cards bleeding into public_health)
+  dataset_size: 20 cards (prompt_eval iteration); 217 cards (final gold, if threshold met)
+  baseline: results/eval_summary_zeroshot_gemma4-12b.json
+
+reference_materials:
+  notebook: notebooks/week4_prompt_tuning_and_evaluation.ipynb
+  confusion_matrix: results/confusion_zeroshot_gemma4-12b.csv
+  corpus: data/health/corpus.csv
+  codebook: data/health/codebook_v1_1.md
+
+success_criteria:
+  minimum: >
+    20-card prompt_eval runs to completion. other_none F1 or womens_health F1
+    improves by ≥0.1 on the prompt_eval set vs zero-shot baseline.
+    Decision documented: proceed to adapters or ceiling noted.
+  good: >
+    Both other_none F1 and womens_health F1 improve by ≥0.1 on prompt_eval.
+    Full gold run completes. macro_f1_all does not regress below 0.60.
+  excellent: >
+    Both boundary classes improve by ≥0.1 on gold. macro_f1_all improves
+    over zero-shot 0.621. Decision to proceed to week 5 adapters is data-driven.
+
+verification:
+  cli:
+    - "export OLLAMA_HOST=http://100.85.195.54:11434"
+    - "Smoke test: uv run --no-sync python retrieval/promptv2_classify.py --text 'I oppose vaccine mandates on personal freedom grounds' --doc-id test_rule3"
+    - "Confirm output is other_none (not public_health)"
+    - "uv run --no-sync python retrieval/promptv2_classify.py --eval-prompt data/health/prompt_eval.csv --model gemma4:12b"
+    - "uv run --no-sync python -m eval.harness --predictions results/predictions_promptv2_gemma4-12b_prompteval.csv --method promptv2_gemma4-12b_prompteval --gold data/health/prompt_eval.csv"
+    - "Check console: other_none F1 and womens_health F1 vs baseline"
+  streamlit:
+    - "This week's deliverable is a CLI evaluation pipeline — no Streamlit changes required"
+    - "results/predictions_promptv2_gemma4-12b_prompteval.csv and the eval summary are the artifacts"
+    - "Confirm both exist and eval summary shows expected F1 values before proceeding to full gold run"

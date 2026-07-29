@@ -1,7 +1,10 @@
 .pytest_cache
 .venv
 __pycache__
+.chromadb/
+chroma/
 
 # Secrets
 .env
 .env.local
+.streamlit/secrets.toml

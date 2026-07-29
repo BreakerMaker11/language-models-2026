@@ -1,0 +1,529 @@
+{
+  "timestamp": "20260720T013134",
+  "mode": "full",
+  "n_queries": 10,
+  "hit_rate": {
+    "@3": 1.0,
+    "@5": 1.0
+  },
+  "results": [
+    {
+      "id": "q01",
+      "query": "committee recommendations mammography screening age 40 to 49",
+      "filter": "hesa_report",
+      "retrieved": [
+        {
+          "chunk_id": "hesa441_breast_cancer_screening_guid_0016_0015",
+          "doc_id": "hesa441_breast_cancer_screening_guid_0016",
+          "org": "Standing Committee on Health",
+          "distance": 0.3311
+        },
+        {
+          "chunk_id": "hesa441_breast_cancer_screening_guid_0016_0020",
+          "doc_id": "hesa441_breast_cancer_screening_guid_0016",
+          "org": "Standing Committee on Health",
+          "distance": 0.365
+        },
+        {
+          "chunk_id": "hesa441_breast_cancer_screening_guid_0016_0001",
+          "doc_id": "hesa441_breast_cancer_screening_guid_0016",
+          "org": "Standing Committee on Health",
+          "distance": 0.3702
+        },
+        {
+          "chunk_id": "hesa441_breast_cancer_screening_guid_0016_0024",
+          "doc_id": "hesa441_breast_cancer_screening_guid_0016",
+          "org": "Standing Committee on Health",
+          "distance": 0.39
+        },
+        {
+          "chunk_id": "hesa441_breast_cancer_screening_guid_0016_0021",
+          "doc_id": "hesa441_breast_cancer_screening_guid_0016",
+          "org": "Standing Committee on Health",
+          "distance": 0.4243
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true,
+      "answer": "To address concerns regarding the Task Force\u2019s draft recommendations (which include the recommendation against routine screening for women aged 40 to 49), the House of Commons Standing Committee on Health put forward 13 recommendations to the Government of Canada [hesa441_breast_cancer_screening_guid_0016 | Standing Committee on Health | Breast Cancer Screening Guidelines]. These include:\n\n*   Accelerating an external expert review of the Task Force\u2019s breast cancer screening guidelines [hesa441_breast_cancer_screening_guid_0016 | Standing Committee on Health | Breast Cancer Screening Guidelines].\n*   Initiating the development of guidelines for women who are at higher-than-average risk for developing breast cancer [hesa441_breast_cancer_screening_guid_0016 | Standing Committee on Health | Breast Cancer Screening Guidelines].\n*   Ensuring appropriate levels of funding for optimized breast cancer screening programs [hesa441_breast_cancer_screening_guid_0016 | Standing Committee on Health | Breast Cancer Screening Guidelines].\n*   Enhancing data collection on breast cancer and, in particular, disaggregated data by race, ethnicity and breast density [hesa441_breast_cancer_screening_guid_0016 | Standing Committee on Health | Breast Cancer Screening Guidelines].\n*   Implementing public health awareness campaigns on breast cancer screening, including those targeted at younger women and Indigenous and racialized communities [hesa441_breast_cancer_screening_guid_0016 | Standing Committee on Health | Breast Cancer Screening Guidelines].\n*   Investing in research on breast cancer [hesa441_breast_cancer_screening_guid_0016 | Standing Committee on Health | Breast Cancer Screening Guidelines].\n\nAdditionally, the Committee recommends that the Task Force be rebuilt with appropriate governance, accountability, transparency and ethics oversight [hesa441_breast_cancer_screening_guid_0016 | Standing Committee on Health | Breast Cancer Screening Guidelines].",
+      "citation": {
+        "cited": [],
+        "valid": [],
+        "invalid": [],
+        "all_valid": false,
+        "no_citations": true
+      }
+    },
+    {
+      "id": "q02",
+      "query": "regulated safe supply fentanyl overdose prevention",
+      "filter": "hesa_brief",
+      "retrieved": [
+        {
+          "chunk_id": "hesa441_opioid_epidemic_and_toxic_dr_0026_0001",
+          "doc_id": "hesa441_opioid_epidemic_and_toxic_dr_0026",
+          "org": "Kolla, Gillian",
+          "distance": 0.2388
+        },
+        {
+          "chunk_id": "hesa441_opioid_epidemic_and_toxic_dr_0035_0002",
+          "doc_id": "hesa441_opioid_epidemic_and_toxic_dr_0035",
+          "org": "ANKORS",
+          "distance": 0.2731
+        },
+        {
+          "chunk_id": "hesa441_opioid_epidemic_and_toxic_dr_0026_0003",
+          "doc_id": "hesa441_opioid_epidemic_and_toxic_dr_0026",
+          "org": "Kolla, Gillian",
+          "distance": 0.2819
+        },
+        {
+          "chunk_id": "hesa441_opioid_epidemic_and_toxic_dr_0025_0004",
+          "doc_id": "hesa441_opioid_epidemic_and_toxic_dr_0025",
+          "org": "British Columbia Centre on Substance Use",
+          "distance": 0.2885
+        },
+        {
+          "chunk_id": "hesa441_opioid_epidemic_and_toxic_dr_0026_0002",
+          "doc_id": "hesa441_opioid_epidemic_and_toxic_dr_0026",
+          "org": "Kolla, Gillian",
+          "distance": 0.2918
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true,
+      "answer": "The drug toxicity overdose crisis is driven by an unregulated and volatile drug supply composed of fentanyl, fentanyl analogues, and other contaminants [hesa441_opioid_epidemic_and_toxic_dr_0026]. Since 2016, the majority of overdose deaths have involved unregulated fentanyl [hesa441_opioid_epidemic_and_toxic_dr_0035].\n\nTo address this, prescribed safer supply programs provide regulated, pharmaceutical drugs of known potency and consistency to individuals who use unregulated drugs in an effort to reduce overdoses [hesa441_opioid_epidemic_and_toxic_dr_0026]. There are currently 24 such programs across Canada receiving federal funding [hesa441_opioid_epidemic_and_toxic_dr_0026]. Research and evaluations of these programs have shown several positive outcomes, including:\n*   Decreased use of unregulated fentanyl and reduced overdose risk [hesa441_opioid_epidemic_and_toxic_dr_0026].\n*   Reduced frequency of injection [hesa441_opioid_epidemic_and_toxic_dr_0026].\n*   Increased uptake of health services and improved physical and mental health outcomes [hesa441_opioid_epidemic_and_toxic_dr_0026].\n*   Improved financial and housing stability [hesa441_opioid_epidemic_and_toxic_dr_0026].\n*   Increased stability and agency over drug use patterns [hesa441_opioid_epidemic_and_toxic_dr_0026].\n\nTo reduce exposure to contaminated unregulated substances, it is recommended that the supply be replaced with prescription and non-medical alternatives [hesa441_opioid_epidemic_and_toxic_dr_0035]. In cases where a regulated drug supply is not available, risk mitigation requires drug checking services, expanded access to opioid agonist therapy, overdose prevention services, and emergency health services [hesa441_opioid_epidemic_and_toxic_dr_0035].",
+      "citation": {
+        "cited": [
+          "hesa441_opioid_epidemic_and_toxic_dr_0026",
+          "hesa441_opioid_epidemic_and_toxic_dr_0035"
+        ],
+        "valid": [
+          "hesa441_opioid_epidemic_and_toxic_dr_0026",
+          "hesa441_opioid_epidemic_and_toxic_dr_0035"
+        ],
+        "invalid": [],
+        "all_valid": true,
+        "no_citations": false
+      }
+    },
+    {
+      "id": "q03",
+      "query": "Practice-Ready Assessment licensing pathway internationally trained physicians",
+      "filter": "hesa_brief",
+      "retrieved": [
+        {
+          "chunk_id": "hesa451_impact_of_immigration_policy_0018_0002",
+          "doc_id": "hesa451_impact_of_immigration_policy_0018",
+          "org": "Canadian Medical Association",
+          "distance": 0.4084
+        },
+        {
+          "chunk_id": "hesa451_impact_of_immigration_policy_0022_0001",
+          "doc_id": "hesa451_impact_of_immigration_policy_0022",
+          "org": "El-Assal, Kareem",
+          "distance": 0.423
+        },
+        {
+          "chunk_id": "hesa451_impact_of_immigration_policy_0023_0007",
+          "doc_id": "hesa451_impact_of_immigration_policy_0023",
+          "org": "World Education Services",
+          "distance": 0.4595
+        },
+        {
+          "chunk_id": "hesa451_impact_of_immigration_policy_0023_0002",
+          "doc_id": "hesa451_impact_of_immigration_policy_0023",
+          "org": "World Education Services",
+          "distance": 0.4716
+        },
+        {
+          "chunk_id": "hesa451_impact_of_immigration_policy_0011_0003",
+          "doc_id": "hesa451_impact_of_immigration_policy_0011",
+          "org": "Morsali, Seyedeh Fereshteh",
+          "distance": 0.4719
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true,
+      "answer": "Practice-Ready Assessment (PRA) programs provide an accelerated pathway to licensure for internationally-trained physicians (ITPs) who have completed medical school and residency but lack a competency assessment [hesa451_impact_of_immigration_policy_0022]. \n\nKey details regarding the PRA licensing pathway include:\n*   **Duration:** A PRA can be completed in 12 weeks or less, which is significantly faster than the two-year period required to complete a medical residency [hesa451_impact_of_immigration_policy_0022].\n*   **Cost Efficiency:** The average cost for a 12-week PRA is $35,000, whereas funding residencies costs approximately $340,000 per spot [hesa451_impact_of_immigration_policy_0022].\n*   **Expansion and Funding Proposals:** \n    *   The Canadian Medical Association recommends providing targeted resources to provinces and territories to expand PRAs and make them available across Canada so experienced international physicians can practice sooner [hesa451_impact_of_immigration_policy_0018].\n    *   A proposal suggests the federal government fund 4,500 PRA spots over a four-year period [hesa451_impact_of_immigration_policy_0022].\n    *   There is a proposal for the federal government to directly fund the Medical Council of Canada (estimated at $12 million over four years) to provide standardized assessor/assessment training and a single point of entry for ITPs applying for a PRA [hesa451_impact_of_immigration_policy_0022].",
+      "citation": {
+        "cited": [
+          "hesa451_impact_of_immigration_policy_0018",
+          "hesa451_impact_of_immigration_policy_0022"
+        ],
+        "valid": [
+          "hesa451_impact_of_immigration_policy_0018",
+          "hesa451_impact_of_immigration_policy_0022"
+        ],
+        "invalid": [],
+        "all_valid": true,
+        "no_citations": false
+      }
+    },
+    {
+      "id": "q04",
+      "query": "national breast implant registry tracking complications",
+      "filter": "hesa_report",
+      "retrieved": [
+        {
+          "chunk_id": "hesa441_oversight_of_medical_devices_0043_0014",
+          "doc_id": "hesa441_oversight_of_medical_devices_0043",
+          "org": "Standing Committee on Health",
+          "distance": 0.1997
+        },
+        {
+          "chunk_id": "hesa441_oversight_of_medical_devices_0043_0016",
+          "doc_id": "hesa441_oversight_of_medical_devices_0043",
+          "org": "Standing Committee on Health",
+          "distance": 0.2345
+        },
+        {
+          "chunk_id": "hesa441_oversight_of_medical_devices_0043_rec_001",
+          "doc_id": "hesa441_oversight_of_medical_devices_0043",
+          "org": "Standing Committee on Health",
+          "distance": 0.2372
+        },
+        {
+          "chunk_id": "hesa441_oversight_of_medical_devices_0043_0013",
+          "doc_id": "hesa441_oversight_of_medical_devices_0043",
+          "org": "Standing Committee on Health",
+          "distance": 0.2506
+        },
+        {
+          "chunk_id": "hesa441_oversight_of_medical_devices_0043_rec_005",
+          "doc_id": "hesa441_oversight_of_medical_devices_0043",
+          "org": "Standing Committee on Health",
+          "distance": 0.2529
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true,
+      "answer": "The lack of a national breast implant registry creates several complications regarding the tracking and management of medical issues:\n\n*   **Traceability and Notification:** Current systems for notifying patients of recalls are \"insufficient,\" which leaves many women uncontacted during safety alerts, such as those involving textured implants [hesa441_oversight_of_medical_devices_0043].\n*   **Data Gaps:** The lack of basic information regarding the number of women with implants or those experiencing safety issues makes it \"impossible to properly calculate risk\" for informed consent prior to surgery [hesa441_oversight_of_medical_devices_0043].\n*   **Provincial Record Variations:** Traceability is further complicated by inconsistent provincial requirements regarding how long surgeons must retain patient records, which range from 5 years in Quebec to 16 years in British Columbia [hesa441_oversight_of_medical_devices_0043].\n*   **Long-term Monitoring:** Because illnesses associated with breast implants can have a long latency period (e.g., 7 to 10 years after implantation), the absence of a registry hinders the ability to proactively track long-term safety [hesa441_oversight_of_medical_devices_0043].\n*   **Risk Assessment:** Without a registry, it is difficult to collect reliable and comprehensive data on risks and benefits or to protect recipients from adverse outcomes that range from minor to life-threatening [hesa441_oversight_of_medical_devices_0043].",
+      "citation": {
+        "cited": [
+          "hesa441_oversight_of_medical_devices_0043"
+        ],
+        "valid": [
+          "hesa441_oversight_of_medical_devices_0043"
+        ],
+        "invalid": [],
+        "all_valid": true,
+        "no_citations": false
+      }
+    },
+    {
+      "id": "q05",
+      "query": "children mental health school closures COVID social isolation",
+      "filter": "hesa_brief",
+      "retrieved": [
+        {
+          "chunk_id": "hesa441_childrens_health_0036_0003",
+          "doc_id": "hesa441_childrens_health_0036",
+          "org": "Doan, Quynh",
+          "distance": 0.255
+        },
+        {
+          "chunk_id": "hesa441_childrens_health_0056_0001",
+          "doc_id": "hesa441_childrens_health_0056",
+          "org": "Canadian Paediatric Society",
+          "distance": 0.3803
+        },
+        {
+          "chunk_id": "hesa441_childrens_health_0038_0001",
+          "doc_id": "hesa441_childrens_health_0038",
+          "org": "ParticipACTION",
+          "distance": 0.3858
+        },
+        {
+          "chunk_id": "hesa441_childrens_health_0014_0004",
+          "doc_id": "hesa441_childrens_health_0014",
+          "org": "Canadian Coalition for the Rights of Children",
+          "distance": 0.4029
+        },
+        {
+          "chunk_id": "hesa441_emergency_situation_facing_c_0096_0001",
+          "doc_id": "hesa441_emergency_situation_facing_c_0096",
+          "org": "Einhorn, Kate",
+          "distance": 0.4118
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true,
+      "answer": "School closures, social isolation, and the impacts of the COVID-19 pandemic have contributed to a worsening of mental health and wellness for children and youth [hesa441_childrens_health_0056]. Specifically:\n\n*   **Impact of School Closures:** Youth who were not in school (not attending any formal educational program) were more likely to report greater severity in the psychiatry and youth health domains compared to those in full-time in-person school [hesa441_childrens_health_0036]. The worsening of child mental health may also be linked to restrictions on physical education and organized sports resulting from these closures [hesa441_childrens_health_0038].\n*   **Impact of Social Isolation:** Stress due to social isolation was associated with deterioration in multiple mental health domains during COVID-19 [hesa441_childrens_health_0038]. This, along with high screen use and the displacement of physical exercise and other prosocial activities, contributed to worsening mental health [hesa441_childrens_health_0038].\n*   **COVID-19 Pandemic Effects:** Mental health concerns were observed in the majority of youth participants during the pandemic [hesa441_childrens_health_0036]. The direct and indirect effects of the pandemic have significantly eroded the mental health and wellness of many Canadians, with specific impacts on children and youth [hesa441_childrens_health_0056]. Consequently, children's hospitals reported increased\u2014and in some cases unprecedented\u2014numbers of youth presenting with anxiety, depression, suicidal thoughts, substance misuse, and eating disorders [hesa441_childrens_health_0056].",
+      "citation": {
+        "cited": [
+          "hesa441_childrens_health_0036",
+          "hesa441_childrens_health_0038",
+          "hesa441_childrens_health_0056"
+        ],
+        "valid": [
+          "hesa441_childrens_health_0036",
+          "hesa441_childrens_health_0038",
+          "hesa441_childrens_health_0056"
+        ],
+        "invalid": [],
+        "all_valid": true,
+        "no_citations": false
+      }
+    },
+    {
+      "id": "q06",
+      "query": "pharmacare coverage diabetes drugs insulin formulary",
+      "filter": "hesa_brief",
+      "retrieved": [
+        {
+          "chunk_id": "hesa441_bill_c64_0015_0002",
+          "doc_id": "hesa441_bill_c64_0015",
+          "org": "Novo Nordisk Canada",
+          "distance": 0.3591
+        },
+        {
+          "chunk_id": "hesa441_bill_c64_0008_0001",
+          "doc_id": "hesa441_bill_c64_0008",
+          "org": "Type 1 Together",
+          "distance": 0.3645
+        },
+        {
+          "chunk_id": "hesa441_bill_c64_0009_0004",
+          "doc_id": "hesa441_bill_c64_0009",
+          "org": "Canadian Generic Pharmaceutical Association",
+          "distance": 0.3824
+        },
+        {
+          "chunk_id": "hesa441_bill_c64_0010_0005",
+          "doc_id": "hesa441_bill_c64_0010",
+          "org": "Canadian Life and Health Insurance Association",
+          "distance": 0.4053
+        },
+        {
+          "chunk_id": "hesa451_canadas_pharmaceutical_sover_0022_0005",
+          "doc_id": "hesa451_canadas_pharmaceutical_sover_0022",
+          "org": "Diabetes Canada",
+          "distance": 0.4107
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true,
+      "answer": "Regarding pharmacare coverage for diabetes drugs and insulin on the national formulary:\n\n*   **Current Status of Specific Drugs:** Health Canada's \"Universal Access to Diabetes Medications, and Diabetes Device Fund for Devices and Supplies\" webpage indicates that the national pharmacare formulary will not cover glucagon or Tresiba (insulin degludec) [hesa441_bill_c64_0008].\n*   **Existing Coverage:** Tresiba is currently covered by NIHB (Non-Insured Health Benefits) and every province except British Columbia [hesa441_bill_c64_0008]. \n*   **Advocacy for Inclusion:** There are calls for the national pharmacare formulary to include all diabetes drugs on the World Health Organization's (WHO) Essential Medicines List, specifically including glucagon and Tresiba [hesa441_bill_c64_0008]. Additionally, it is recommended that all diabetes drugs currently reimbursed by public drug programs in Canada be included in the list [hesa441_bill_c64_0009].\n*   **Impact on Choice and Availability:** A shift to a single-payer system under Bill C-64 could result in fewer medicines being available for patients if private insurers remove certain categories (such as metformin and SGLT2 inhibitors) from their sponsored plans [hesa441_bill_c64_0015].\n*   **Formulary Management Principles:** To ensure sustainability, it is recommended that the pharmacare regime only reimburse for the lowest cost alternative product (generic or biosimilar medicines) once they are authorized by Health Canada and enter the market [hesa441_bill_c64_0009].",
+      "citation": {
+        "cited": [
+          "hesa441_bill_c64_0008",
+          "hesa441_bill_c64_0009",
+          "hesa441_bill_c64_0015"
+        ],
+        "valid": [
+          "hesa441_bill_c64_0008",
+          "hesa441_bill_c64_0009",
+          "hesa441_bill_c64_0015"
+        ],
+        "invalid": [],
+        "all_valid": true,
+        "no_citations": false
+      }
+    },
+    {
+      "id": "q07",
+      "query": "PMPRB mandate patented medicine price regulation clarify",
+      "filter": "gov_response",
+      "retrieved": [
+        {
+          "chunk_id": "hesa441_patented_medicine_prices_rev_0009_rec_004",
+          "doc_id": "hesa441_patented_medicine_prices_rev_0009",
+          "org": "Government of Canada",
+          "distance": 0.1915
+        },
+        {
+          "chunk_id": "hesa441_patented_medicine_prices_rev_0009_rec_002",
+          "doc_id": "hesa441_patented_medicine_prices_rev_0009",
+          "org": "Government of Canada",
+          "distance": 0.2427
+        },
+        {
+          "chunk_id": "hesa441_patented_medicine_prices_rev_0009_0001",
+          "doc_id": "hesa441_patented_medicine_prices_rev_0009",
+          "org": "Government of Canada",
+          "distance": 0.2652
+        },
+        {
+          "chunk_id": "hesa441_patented_medicine_prices_rev_0009_0004",
+          "doc_id": "hesa441_patented_medicine_prices_rev_0009",
+          "org": "Government of Canada",
+          "distance": 0.3201
+        },
+        {
+          "chunk_id": "hesa441_patented_medicine_prices_rev_0009_rec_001",
+          "doc_id": "hesa441_patented_medicine_prices_rev_0009",
+          "org": "Government of Canada",
+          "distance": 0.3385
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true,
+      "answer": "",
+      "citation": {
+        "cited": [],
+        "valid": [],
+        "invalid": [],
+        "all_valid": false,
+        "no_citations": true
+      }
+    },
+    {
+      "id": "q08",
+      "query": "government closing gender gap women health research funding",
+      "filter": "gov_response",
+      "retrieved": [
+        {
+          "chunk_id": "hesa451_womens_health_0002_0007",
+          "doc_id": "hesa451_womens_health_0002",
+          "org": "Government of Canada",
+          "distance": 0.4274
+        },
+        {
+          "chunk_id": "hesa451_womens_health_0002_0001",
+          "doc_id": "hesa451_womens_health_0002",
+          "org": "Government of Canada",
+          "distance": 0.4542
+        },
+        {
+          "chunk_id": "hesa451_womens_health_0002_0002",
+          "doc_id": "hesa451_womens_health_0002",
+          "org": "Government of Canada",
+          "distance": 0.4805
+        },
+        {
+          "chunk_id": "hesa451_breast_cancer_screening_guid_0002_0017",
+          "doc_id": "hesa451_breast_cancer_screening_guid_0002",
+          "org": "Government of Canada",
+          "distance": 0.5047
+        },
+        {
+          "chunk_id": "hesa441_oversight_of_medical_devices_0044_0007",
+          "doc_id": "hesa441_oversight_of_medical_devices_0044",
+          "org": "Government of Canada",
+          "distance": 0.5152
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true,
+      "answer": "The Government of Canada is working to close the gender health gap through several research funding initiatives and programs:\n\n*   **General Women's Health Research:** From 2020-21 to 2024-25, CIHR invested over $353 million in women's health research, which included more than $86 million last year [hesa451_womens_health_0002].\n*   **National Women's Health Research Initiative (NWHRI):** In partnership with WAGE, the NWHRI uses an intersectional lens to address under-researched and high-priority areas of women's health [hesa451_womens_health_0002]. Launched in 2022, it has invested $26.5 million across two streams: the Pan-Canadian Women's Health Coalition and the Innovation Fund [hesa451_womens_health_0002]. The Innovation Fund specifically supports high-risk and high-reward areas that have been traditionally underfunded, such as biomedical, translational, and implementation research [hesa451_womens_health_0002].\n*   **Endometriosis Research:** Between 2020-21 and 2024-25, CIHR invested $4.9 million in new endometriosis research [hesa451_womens_health_0002].\n*   **Sexual and Reproductive Health Fund:** Established by Health Canada in 2021, this fund has provided $91 million to support third-party projects, including research into polycystic ovary syndrome, endometriosis, and other gynecological conditions [hesa451_womens_health_0002].\n*   **Cancer Research:** Over the past five years, CIHR has invested over $1.1 billion in cancer research and knowledge mobilization, which includes gynecological cancers such as ovarian, endometrial, and cervical cancers [hesa451_womens_health_0002]. \n*   **Bringing Biology to Cancer Prevention:** Launched in 2024, this initiative includes a \"Cancer in Women\" funding pool of over $41 million to support research on cancer prevention, risk reduction, and early detection for women and gender-diverse individuals [hesa451_womens_health_0002].\n\nTo ensure research is rigorous and applicable, CIHR requires all applicants to integrate sex, gender, and other identity factors into their research design and practices when appropriate [hesa451_womens_health_0002].",
+      "citation": {
+        "cited": [
+          "hesa451_womens_health_0002"
+        ],
+        "valid": [
+          "hesa451_womens_health_0002"
+        ],
+        "invalid": [],
+        "all_valid": true,
+        "no_citations": false
+      }
+    },
+    {
+      "id": "q09",
+      "query": "antimicrobial resistance surveillance infection control healthcare",
+      "filter": "hesa_brief",
+      "retrieved": [
+        {
+          "chunk_id": "hesa451_antimicrobial_resistance_0010_0001",
+          "doc_id": "hesa451_antimicrobial_resistance_0010",
+          "org": "Infection Prevention and Control Canada",
+          "distance": 0.2689
+        },
+        {
+          "chunk_id": "hesa451_antimicrobial_resistance_0010_0004",
+          "doc_id": "hesa451_antimicrobial_resistance_0010",
+          "org": "Infection Prevention and Control Canada",
+          "distance": 0.3501
+        },
+        {
+          "chunk_id": "hesa451_antimicrobial_resistance_0003_0002",
+          "doc_id": "hesa451_antimicrobial_resistance_0003",
+          "org": "Results Canada / Stop TB Canada",
+          "distance": 0.3992
+        },
+        {
+          "chunk_id": "hesa441_bill_c293_0005_0004",
+          "doc_id": "hesa441_bill_c293_0005",
+          "org": "Chicken Farmers of Canada",
+          "distance": 0.4251
+        },
+        {
+          "chunk_id": "hesa451_antimicrobial_resistance_0011_0002",
+          "doc_id": "hesa451_antimicrobial_resistance_0011",
+          "org": "Patients for Patient Safety Canada",
+          "distance": 0.4264
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true,
+      "answer": "Antimicrobial resistance (AMR) is a global health concern with significant mortality and financial impacts in Canada [hesa451_antimicrobial_resistance_0010]. It is characterized as a \u201csilent pandemic\u201d because transmission and cases often go unnoticed [hesa451_antimicrobial_resistance_0010]. Currently, nearly one in 10 acute care patients in Canada is colonized with an antimicrobial resistant organism (ARO) [hesa451_antimicrobial_resistance_0010].\n\nTo combat AMR, three core pillars are required:\n*   **Infection control:** Helps prevent the transmission of AMR [hesa451_antimicrobial_resistance_0010].\n*   **Surveillance:** Identifies epidemiological trends [hesa451_antimicrobial_resistance_0010].\n*   **Antimicrobial stewardship:** Safeguards current antimicrobial agents to reduce the emergence of further resistance [hesa451_antimicrobial_resistance_0010].\n\nIn Canada's healthcare system, there are inconsistencies in the implementation of these programs, particularly in underserved communities and sectors outside of acute care, such as long-term care facilities [hesa451_antimicrobial_resistance_0010]. While current surveillance programs act as sentinels to identify broad trends, they lack the depth or breadth needed to map transmission and the granularity required for local practices [hesa451_antimicrobial_resistance_0010].\n\nInfection Control Professionals (ICPs) and Infection Prevention and Control (IPAC) programs are central to the infrastructure for monitoring these practices [hesa451_antimicrobial_resistance_0010]. ICPs rely on epidemiological data to develop policies that balance clinical operational needs with financial stewardship [hesa451_antimicrobial_resistance_0010].\n\nSpecific challenges regarding drug-resistant tuberculosis (DR-TB) highlight the risks of AMR; DR-TB accounts for approximately one third of all deaths associated with AMR [hesa451_antimicrobial_resistance_0003]. Failures in surveillance, diagnosis, treatment, and stewardship have direct consequences on domestic health security [hesa451_antimicrobial_resistance_0003].\n\nTo address these challenges, recommendations include building infection control capacities through training and capacity-building initiatives (such as the IPAC Hub) and adopting an integrated, multi-sector approach to surveillance that focuses on transmission dynamics both inside and outside of healthcare settings [hesa451_antimicrobial_resistance_0010].",
+      "citation": {
+        "cited": [
+          "hesa451_antimicrobial_resistance_0003",
+          "hesa451_antimicrobial_resistance_0010"
+        ],
+        "valid": [
+          "hesa451_antimicrobial_resistance_0003",
+          "hesa451_antimicrobial_resistance_0010"
+        ],
+        "invalid": [],
+        "all_valid": true,
+        "no_citations": false
+      }
+    },
+    {
+      "id": "q10",
+      "query": "domestic pharmaceutical manufacturing supply chain sovereignty",
+      "filter": "hesa_brief",
+      "retrieved": [
+        {
+          "chunk_id": "hesa451_canadas_pharmaceutical_sover_0010_0001",
+          "doc_id": "hesa451_canadas_pharmaceutical_sover_0010",
+          "org": "Neighbourhood Pharmacy Association of Canada",
+          "distance": 0.2408
+        },
+        {
+          "chunk_id": "hesa451_canadas_pharmaceutical_sover_0010_0002",
+          "doc_id": "hesa451_canadas_pharmaceutical_sover_0010",
+          "org": "Neighbourhood Pharmacy Association of Canada",
+          "distance": 0.2659
+        },
+        {
+          "chunk_id": "hesa451_canadas_pharmaceutical_sover_0028_0003",
+          "doc_id": "hesa451_canadas_pharmaceutical_sover_0028",
+          "org": "Dr. Reddy\u2019s Laboratories Canada Inc.",
+          "distance": 0.2759
+        },
+        {
+          "chunk_id": "hesa451_canadas_pharmaceutical_sover_0007_0001",
+          "doc_id": "hesa451_canadas_pharmaceutical_sover_0007",
+          "org": "Canadian Association for Pharmacy Distribution Management",
+          "distance": 0.282
+        },
+        {
+          "chunk_id": "hesa451_canadas_pharmaceutical_sover_0006_0004",
+          "doc_id": "hesa451_canadas_pharmaceutical_sover_0006",
+          "org": "JAMP Pharma Group",
+          "distance": 0.3198
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true,
+      "answer": "To achieve pharmaceutical sovereignty in Canada's manufacturing supply chain, a balanced, whole-system approach is required that includes all aspects of innovation and the pharmaceutical supply sector [hesa451_canadas_pharmaceutical_sover_0010].\n\nKey components of this approach include:\n\n*   **Balanced Investment:** A narrow policy focus on domestic biomanufacturing in isolation can reduce competitive pressure, slow development, constrain supply, increase costs, and create barriers to patient access [hesa451_canadas_pharmaceutical_sover_0010]. Focusing solely on domestic manufacturing risks narrowing supplier diversity and limiting access to affordable options [hesa451_canadas_pharmaceutical_sover_0028].\n*   **Global Integration:** Because no single country can produce the full range of inputs required for modern biomanufacturing\u2014such as Active Pharmaceutical Ingredients (APIs), reagents, bioprocessing materials, and specialized equipment\u2014Canada relies on a globally distributed network [hesa451_canadas_pharmaceutical_sover_0010]. Combining expanded domestic capacity with resilient international supply chains and global partnerships allows the country to better withstand disruptions [hesa451_canadas_pharmaceutical_sover_0028].\n*   **Point of Care:** True sovereignty is measured by whether medicines reliably reach patients at the point of care [hesa451_canadas_pharmaceutical_sover_0010]. Community pharmacies are considered critical health care infrastructure that manage shortages in real time and ensure access for vulnerable patients [hesa451_canadas_pharmaceutical_sover_0010].\n*   **Regulatory Efficiency:** Regulatory modernization is a \"foundational enabler\" of pharmaceutical sovereignty [hesa451_canadas_pharmaceutical_sover_0028]. Predictable and timely Health Canada approval timelines are necessary to ensure consistent access, support domestic manufacturing by reducing market risk, and allow for the rapid authorization of alternate suppliers or equivalent generics during supply disruptions [hesa451_canadas_pharmaceutical_sover_0028].",
+      "citation": {
+        "cited": [
+          "hesa451_canadas_pharmaceutical_sover_0010",
+          "hesa451_canadas_pharmaceutical_sover_0028"
+        ],
+        "valid": [
+          "hesa451_canadas_pharmaceutical_sover_0010",
+          "hesa451_canadas_pharmaceutical_sover_0028"
+        ],
+        "invalid": [],
+        "all_valid": true,
+        "no_citations": false
+      }
+    }
+  ]
+}

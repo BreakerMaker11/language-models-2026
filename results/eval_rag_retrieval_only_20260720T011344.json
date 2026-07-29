@@ -1,0 +1,401 @@
+{
+  "timestamp": "20260720T011344",
+  "mode": "retrieval_only",
+  "n_queries": 10,
+  "hit_rate": {
+    "@3": 0.8,
+    "@5": 0.8
+  },
+  "results": [
+    {
+      "id": "q01",
+      "query": "committee recommendations mammography screening age 40 to 49",
+      "filter": "hesa_report",
+      "retrieved": [
+        {
+          "chunk_id": "hesa441_breast_cancer_screening_guid_0016_0015",
+          "doc_id": "hesa441_breast_cancer_screening_guid_0016",
+          "org": "Standing Committee on Health",
+          "distance": 0.3311
+        },
+        {
+          "chunk_id": "hesa441_breast_cancer_screening_guid_0016_0020",
+          "doc_id": "hesa441_breast_cancer_screening_guid_0016",
+          "org": "Standing Committee on Health",
+          "distance": 0.365
+        },
+        {
+          "chunk_id": "hesa441_breast_cancer_screening_guid_0016_0001",
+          "doc_id": "hesa441_breast_cancer_screening_guid_0016",
+          "org": "Standing Committee on Health",
+          "distance": 0.3702
+        },
+        {
+          "chunk_id": "hesa441_breast_cancer_screening_guid_0016_0024",
+          "doc_id": "hesa441_breast_cancer_screening_guid_0016",
+          "org": "Standing Committee on Health",
+          "distance": 0.39
+        },
+        {
+          "chunk_id": "hesa441_breast_cancer_screening_guid_0016_0021",
+          "doc_id": "hesa441_breast_cancer_screening_guid_0016",
+          "org": "Standing Committee on Health",
+          "distance": 0.4243
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true
+    },
+    {
+      "id": "q02",
+      "query": "regulated safe supply fentanyl overdose prevention",
+      "filter": "hesa_brief",
+      "retrieved": [
+        {
+          "chunk_id": "hesa441_opioid_epidemic_and_toxic_dr_0026_0001",
+          "doc_id": "hesa441_opioid_epidemic_and_toxic_dr_0026",
+          "org": "Kolla, Gillian",
+          "distance": 0.2388
+        },
+        {
+          "chunk_id": "hesa441_opioid_epidemic_and_toxic_dr_0035_0002",
+          "doc_id": "hesa441_opioid_epidemic_and_toxic_dr_0035",
+          "org": "ANKORS",
+          "distance": 0.2731
+        },
+        {
+          "chunk_id": "hesa441_opioid_epidemic_and_toxic_dr_0026_0003",
+          "doc_id": "hesa441_opioid_epidemic_and_toxic_dr_0026",
+          "org": "Kolla, Gillian",
+          "distance": 0.2819
+        },
+        {
+          "chunk_id": "hesa441_opioid_epidemic_and_toxic_dr_0025_0004",
+          "doc_id": "hesa441_opioid_epidemic_and_toxic_dr_0025",
+          "org": "British Columbia Centre on Substance Use",
+          "distance": 0.2885
+        },
+        {
+          "chunk_id": "hesa441_opioid_epidemic_and_toxic_dr_0026_0002",
+          "doc_id": "hesa441_opioid_epidemic_and_toxic_dr_0026",
+          "org": "Kolla, Gillian",
+          "distance": 0.2918
+        }
+      ],
+      "hit@3": false,
+      "hit@5": false
+    },
+    {
+      "id": "q03",
+      "query": "Practice-Ready Assessment licensing pathway internationally trained physicians",
+      "filter": "hesa_brief",
+      "retrieved": [
+        {
+          "chunk_id": "hesa451_impact_of_immigration_policy_0018_0002",
+          "doc_id": "hesa451_impact_of_immigration_policy_0018",
+          "org": "Canadian Medical Association",
+          "distance": 0.4084
+        },
+        {
+          "chunk_id": "hesa451_impact_of_immigration_policy_0022_0001",
+          "doc_id": "hesa451_impact_of_immigration_policy_0022",
+          "org": "El-Assal, Kareem",
+          "distance": 0.423
+        },
+        {
+          "chunk_id": "hesa451_impact_of_immigration_policy_0023_0007",
+          "doc_id": "hesa451_impact_of_immigration_policy_0023",
+          "org": "World Education Services",
+          "distance": 0.4595
+        },
+        {
+          "chunk_id": "hesa451_impact_of_immigration_policy_0023_0002",
+          "doc_id": "hesa451_impact_of_immigration_policy_0023",
+          "org": "World Education Services",
+          "distance": 0.4716
+        },
+        {
+          "chunk_id": "hesa451_impact_of_immigration_policy_0011_0003",
+          "doc_id": "hesa451_impact_of_immigration_policy_0011",
+          "org": "Morsali, Seyedeh Fereshteh",
+          "distance": 0.4719
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true
+    },
+    {
+      "id": "q04",
+      "query": "national breast implant registry tracking complications",
+      "filter": "hesa_report",
+      "retrieved": [
+        {
+          "chunk_id": "hesa441_oversight_of_medical_devices_0043_0014",
+          "doc_id": "hesa441_oversight_of_medical_devices_0043",
+          "org": "Standing Committee on Health",
+          "distance": 0.1997
+        },
+        {
+          "chunk_id": "hesa441_oversight_of_medical_devices_0043_0016",
+          "doc_id": "hesa441_oversight_of_medical_devices_0043",
+          "org": "Standing Committee on Health",
+          "distance": 0.2345
+        },
+        {
+          "chunk_id": "hesa441_oversight_of_medical_devices_0043_rec_001",
+          "doc_id": "hesa441_oversight_of_medical_devices_0043",
+          "org": "Standing Committee on Health",
+          "distance": 0.2372
+        },
+        {
+          "chunk_id": "hesa441_oversight_of_medical_devices_0043_0013",
+          "doc_id": "hesa441_oversight_of_medical_devices_0043",
+          "org": "Standing Committee on Health",
+          "distance": 0.2506
+        },
+        {
+          "chunk_id": "hesa441_oversight_of_medical_devices_0043_rec_005",
+          "doc_id": "hesa441_oversight_of_medical_devices_0043",
+          "org": "Standing Committee on Health",
+          "distance": 0.2529
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true
+    },
+    {
+      "id": "q05",
+      "query": "children mental health school closures COVID social isolation",
+      "filter": "hesa_brief",
+      "retrieved": [
+        {
+          "chunk_id": "hesa441_childrens_health_0036_0003",
+          "doc_id": "hesa441_childrens_health_0036",
+          "org": "Doan, Quynh",
+          "distance": 0.255
+        },
+        {
+          "chunk_id": "hesa441_childrens_health_0056_0001",
+          "doc_id": "hesa441_childrens_health_0056",
+          "org": "Canadian Paediatric Society",
+          "distance": 0.3803
+        },
+        {
+          "chunk_id": "hesa441_childrens_health_0038_0001",
+          "doc_id": "hesa441_childrens_health_0038",
+          "org": "ParticipACTION",
+          "distance": 0.3858
+        },
+        {
+          "chunk_id": "hesa441_childrens_health_0014_0004",
+          "doc_id": "hesa441_childrens_health_0014",
+          "org": "Canadian Coalition for the Rights of Children",
+          "distance": 0.4029
+        },
+        {
+          "chunk_id": "hesa441_emergency_situation_facing_c_0096_0001",
+          "doc_id": "hesa441_emergency_situation_facing_c_0096",
+          "org": "Einhorn, Kate",
+          "distance": 0.4118
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true
+    },
+    {
+      "id": "q06",
+      "query": "pharmacare coverage diabetes drugs insulin formulary",
+      "filter": "hesa_brief",
+      "retrieved": [
+        {
+          "chunk_id": "hesa441_bill_c64_0015_0002",
+          "doc_id": "hesa441_bill_c64_0015",
+          "org": "Novo Nordisk Canada",
+          "distance": 0.3591
+        },
+        {
+          "chunk_id": "hesa441_bill_c64_0008_0001",
+          "doc_id": "hesa441_bill_c64_0008",
+          "org": "Type 1 Together",
+          "distance": 0.3645
+        },
+        {
+          "chunk_id": "hesa441_bill_c64_0009_0004",
+          "doc_id": "hesa441_bill_c64_0009",
+          "org": "Canadian Generic Pharmaceutical Association",
+          "distance": 0.3824
+        },
+        {
+          "chunk_id": "hesa441_bill_c64_0010_0005",
+          "doc_id": "hesa441_bill_c64_0010",
+          "org": "Canadian Life and Health Insurance Association",
+          "distance": 0.4053
+        },
+        {
+          "chunk_id": "hesa451_canadas_pharmaceutical_sover_0022_0005",
+          "doc_id": "hesa451_canadas_pharmaceutical_sover_0022",
+          "org": "Diabetes Canada",
+          "distance": 0.4107
+        }
+      ],
+      "hit@3": false,
+      "hit@5": false
+    },
+    {
+      "id": "q07",
+      "query": "PMPRB mandate patented medicine price regulation clarify",
+      "filter": "gov_response",
+      "retrieved": [
+        {
+          "chunk_id": "hesa441_patented_medicine_prices_rev_0009_rec_004",
+          "doc_id": "hesa441_patented_medicine_prices_rev_0009",
+          "org": "Government of Canada",
+          "distance": 0.1915
+        },
+        {
+          "chunk_id": "hesa441_patented_medicine_prices_rev_0009_rec_002",
+          "doc_id": "hesa441_patented_medicine_prices_rev_0009",
+          "org": "Government of Canada",
+          "distance": 0.2427
+        },
+        {
+          "chunk_id": "hesa441_patented_medicine_prices_rev_0009_0001",
+          "doc_id": "hesa441_patented_medicine_prices_rev_0009",
+          "org": "Government of Canada",
+          "distance": 0.2652
+        },
+        {
+          "chunk_id": "hesa441_patented_medicine_prices_rev_0009_0004",
+          "doc_id": "hesa441_patented_medicine_prices_rev_0009",
+          "org": "Government of Canada",
+          "distance": 0.3201
+        },
+        {
+          "chunk_id": "hesa441_patented_medicine_prices_rev_0009_rec_001",
+          "doc_id": "hesa441_patented_medicine_prices_rev_0009",
+          "org": "Government of Canada",
+          "distance": 0.3385
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true
+    },
+    {
+      "id": "q08",
+      "query": "government closing gender gap women health research funding",
+      "filter": "gov_response",
+      "retrieved": [
+        {
+          "chunk_id": "hesa451_womens_health_0002_0007",
+          "doc_id": "hesa451_womens_health_0002",
+          "org": "Government of Canada",
+          "distance": 0.4274
+        },
+        {
+          "chunk_id": "hesa451_womens_health_0002_0001",
+          "doc_id": "hesa451_womens_health_0002",
+          "org": "Government of Canada",
+          "distance": 0.4542
+        },
+        {
+          "chunk_id": "hesa451_womens_health_0002_0002",
+          "doc_id": "hesa451_womens_health_0002",
+          "org": "Government of Canada",
+          "distance": 0.4805
+        },
+        {
+          "chunk_id": "hesa451_breast_cancer_screening_guid_0002_0017",
+          "doc_id": "hesa451_breast_cancer_screening_guid_0002",
+          "org": "Government of Canada",
+          "distance": 0.5047
+        },
+        {
+          "chunk_id": "hesa441_oversight_of_medical_devices_0044_0007",
+          "doc_id": "hesa441_oversight_of_medical_devices_0044",
+          "org": "Government of Canada",
+          "distance": 0.5152
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true
+    },
+    {
+      "id": "q09",
+      "query": "antimicrobial resistance surveillance infection control healthcare",
+      "filter": "hesa_brief",
+      "retrieved": [
+        {
+          "chunk_id": "hesa451_antimicrobial_resistance_0010_0001",
+          "doc_id": "hesa451_antimicrobial_resistance_0010",
+          "org": "Infection Prevention and Control Canada",
+          "distance": 0.2689
+        },
+        {
+          "chunk_id": "hesa451_antimicrobial_resistance_0010_0004",
+          "doc_id": "hesa451_antimicrobial_resistance_0010",
+          "org": "Infection Prevention and Control Canada",
+          "distance": 0.3501
+        },
+        {
+          "chunk_id": "hesa451_antimicrobial_resistance_0003_0002",
+          "doc_id": "hesa451_antimicrobial_resistance_0003",
+          "org": "Results Canada / Stop TB Canada",
+          "distance": 0.3992
+        },
+        {
+          "chunk_id": "hesa441_bill_c293_0005_0004",
+          "doc_id": "hesa441_bill_c293_0005",
+          "org": "Chicken Farmers of Canada",
+          "distance": 0.4251
+        },
+        {
+          "chunk_id": "hesa451_antimicrobial_resistance_0011_0002",
+          "doc_id": "hesa451_antimicrobial_resistance_0011",
+          "org": "Patients for Patient Safety Canada",
+          "distance": 0.4264
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true
+    },
+    {
+      "id": "q10",
+      "query": "domestic pharmaceutical manufacturing supply chain sovereignty",
+      "filter": "hesa_brief",
+      "retrieved": [
+        {
+          "chunk_id": "hesa451_canadas_pharmaceutical_sover_0010_0001",
+          "doc_id": "hesa451_canadas_pharmaceutical_sover_0010",
+          "org": "Neighbourhood Pharmacy Association of Canada",
+          "distance": 0.2408
+        },
+        {
+          "chunk_id": "hesa451_canadas_pharmaceutical_sover_0010_0002",
+          "doc_id": "hesa451_canadas_pharmaceutical_sover_0010",
+          "org": "Neighbourhood Pharmacy Association of Canada",
+          "distance": 0.2659
+        },
+        {
+          "chunk_id": "hesa451_canadas_pharmaceutical_sover_0028_0003",
+          "doc_id": "hesa451_canadas_pharmaceutical_sover_0028",
+          "org": "Dr. Reddy\u2019s Laboratories Canada Inc.",
+          "distance": 0.2759
+        },
+        {
+          "chunk_id": "hesa451_canadas_pharmaceutical_sover_0007_0001",
+          "doc_id": "hesa451_canadas_pharmaceutical_sover_0007",
+          "org": "Canadian Association for Pharmacy Distribution Management",
+          "distance": 0.282
+        },
+        {
+          "chunk_id": "hesa451_canadas_pharmaceutical_sover_0006_0004",
+          "doc_id": "hesa451_canadas_pharmaceutical_sover_0006",
+          "org": "JAMP Pharma Group",
+          "distance": 0.3198
+        }
+      ],
+      "hit@3": true,
+      "hit@5": true
+    }
+  ]
+}

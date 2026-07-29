@@ -1,0 +1,62 @@
+{
+  "document_title": "Canadian Medical Association Ministerial Letter — Federal Health Priorities",
+  "document_description": "Out-of-distribution demo document: a CMA letter to the Minister of Health spanning eight policy asks. Used as the week-8 demo; it is deliberately out-of-distribution (multi-topic, single letter) to show the limits of single-label classification.",
+  "sections": [
+    {
+      "section_id": "s1",
+      "title": "Health Workforce Crisis",
+      "card_text": "Canada is facing a severe health workforce shortage that threatens the sustainability of our public health system. Thousands of internationally trained physicians and nurses remain sidelined by slow credential recognition processes and inadequate licensing pathways. The CMA urges the federal government to work with provinces and territories to scale up Practice-Ready Assessment programs, streamline foreign credential recognition, and increase residency positions. Investments in retention and burnout prevention — including mental health supports for healthcare workers — are equally urgent. Without a coordinated national workforce strategy, wait times will continue to grow and Canadians in rural and remote communities will bear the greatest burden.",
+      "ask_text": "What did stakeholders recommend about credential recognition and licensing pathways for internationally trained health professionals?",
+      "keyword_prediction": "workforce"
+    },
+    {
+      "section_id": "s2",
+      "title": "Universal Pharmacare",
+      "card_text": "The CMA supports the phased implementation of universal pharmacare beginning with diabetes medications and contraceptives, as proposed in Bill C-64. Access to essential medicines must not depend on employment status or province of residence. We call on the government to establish a national formulary grounded in evidence and cost-effectiveness, negotiate drug prices through a strengthened Patented Medicine Prices Review Board, and ensure that pharmacare complements rather than disrupts existing employer-sponsored drug benefit plans. The transition must be managed carefully to avoid coverage gaps for Canadians who currently rely on private insurance.",
+      "ask_text": "What did stakeholders recommend about pharmacare coverage, formulary design, and transition from private drug plans?",
+      "keyword_prediction": "pharmacare"
+    },
+    {
+      "section_id": "s3",
+      "title": "Mental Health Parity",
+      "card_text": "Mental illness affects one in five Canadians yet receives a fraction of the funding allocated to physical health conditions. The CMA calls for mental health to be treated with the same urgency as physical health, including federal transfers targeted at community-based mental health services, expanded access to psychological therapies, and integration of mental health into primary care settings. Suicide prevention must be prioritized through implementation of a national three-digit crisis line and adequate resourcing of crisis response teams. The pandemic has deepened the mental health crisis, particularly among youth, and recovery requires sustained federal leadership and investment.",
+      "ask_text": "What did stakeholders recommend on access to mental health services, psychological therapy coverage, and suicide prevention?",
+      "keyword_prediction": "mental_health"
+    },
+    {
+      "section_id": "s4",
+      "title": "Indigenous Health Equity",
+      "card_text": "The health gap between Indigenous and non-Indigenous Canadians remains unacceptably wide. The CMA calls on the federal government to fully implement Jordan's Principle without delay, ensure that First Nations, Inuit, and Métis Peoples have access to culturally safe care, and support Indigenous-led health governance and self-determination. Non-Insured Health Benefits must be reformed to remove unjust barriers. The government must meaningfully engage with Indigenous health organizations in all federal health policy development — not as an afterthought but as a co-design partner from the outset.",
+      "ask_text": "What did stakeholders recommend about Indigenous health access, Jordan's Principle, and culturally safe care?",
+      "keyword_prediction": "indigenous_health"
+    },
+    {
+      "section_id": "s5",
+      "title": "Cancer Screening Guidelines",
+      "card_text": "The CMA is deeply concerned about Canada's breast cancer screening guidelines, which continue to recommend against routine screening for women aged 40 to 49. International evidence and testimony from leading oncologists, radiologists, and patient advocates consistently support earlier screening. We urge the federal government to commission an independent expert review of the Canadian Task Force on Preventive Health Care's guidelines, ensure that the Task Force's governance includes patient representation, and implement evidence-based national screening standards that close the gap with peer countries. Delayed diagnosis costs lives and increases treatment costs.",
+      "ask_text": "What did the committee recommend about breast cancer screening guidelines and the role of the Task Force on Preventive Health Care?",
+      "keyword_prediction": "womens_health"
+    },
+    {
+      "section_id": "s6",
+      "title": "Women's Health Research",
+      "card_text": "Women have historically been underrepresented in clinical research, leading to diagnostic gaps, treatment inequities, and worse health outcomes. The CMA calls on the federal government to mandate sex- and gender-disaggregated data collection across all federally funded health research, increase CIHR investment in women's health research including endometriosis, menopause, and autoimmune conditions, and address persistent biases in medical education. Women's health must be treated as a distinct priority and not subsumed under general population health frameworks that default to male physiology.",
+      "ask_text": "What commitments did the government make on closing the gender gap in health research and women's health outcomes?",
+      "keyword_prediction": "womens_health"
+    },
+    {
+      "section_id": "s7",
+      "title": "Antimicrobial Resistance",
+      "card_text": "Antimicrobial resistance poses one of the most serious long-term threats to global health, and Canada's response remains inadequate. The CMA urges the government to implement a fully funded national AMR action plan with robust surveillance systems, stewardship programs in hospitals and long-term care, and incentives for domestic development of new antibiotics. The overuse of antibiotics in agriculture must be addressed in partnership with the food sector. International coordination through the G7 and WHO is essential, but domestic investment in infection prevention and control is the foundation.",
+      "ask_text": "What did stakeholders recommend about antimicrobial resistance surveillance, stewardship, and domestic antibiotic development?",
+      "keyword_prediction": "public_health"
+    },
+    {
+      "section_id": "s8",
+      "title": "Health System Sustainability",
+      "card_text": "Canada's health system faces a sustainability crisis driven by an aging population, physician and nurse shortages, and a primary care access gap that funnels preventable conditions into emergency departments. The CMA calls for federal leadership on a national primary care strategy, expanded scope of practice for nurse practitioners and pharmacists, scaled investment in virtual care and digital health infrastructure, and a long-term funding framework with the provinces and territories that rewards outcomes rather than activity. The current fee-for-service model in many jurisdictions creates perverse incentives that must be reformed in collaboration with provincial governments and the medical profession.",
+      "ask_text": "What did the government commit to regarding health system sustainability, primary care access, and federal health transfers?",
+      "keyword_prediction": "workforce"
+    }
+  ]
+}

@@ -66,6 +66,32 @@ adapt in my own assignment files and config.
 - Few-shot examples come from train.csv only, selected without peeking at
   gold; keep prompts + example doc_ids versioned in the assignment files.
 
+
+## RAG subsystem (added day 13)
+
+- Retrieval corpus: data/health/rag_chunks.jsonl (synced; see SYNC_VERSION).
+  Chunks carry UNMASKED text over FULL documents — this deliberately inverts
+  two classifier rules: masking (retrieval/citation needs real org names) and
+  the card window (retrieval targets content, not primary subject). The
+  classifier rules above still bind for anything classification-shaped.
+- Index: rag/build_index.py → persistent Chroma in chroma/ (gitignored,
+  rebuildable); embedder all-MiniLM-L6-v2 — must match the chunk embedder;
+  never mix embedding models within one collection.
+- Topic labels are NEVER retrieval filters. Filters are metadata only:
+  source_type (the three gap layers), org, stakeholder_type, study, session.
+- Generation: gemma4:12b, no num_predict cap (generation, not classification);
+  grounded prompt — answer only from passages, cite [doc_id] per claim,
+  say so if passages don't contain the answer.
+- K: retrieve 5, use top 3 per layer. Not tuned — tuning K against gold or
+  demo queries is contamination; K is a stated design constant.
+- Evaluation: 10-query known-answer hit-rate@3 + manual faithfulness audit
+  of the 8 CMA demo answers; LLM-as-judge at scale = future work.
+- Demo path: 8 CMA sections precomputed by script to results/gap_analysis.json;
+  the Streamlit tab DISPLAYS that file — only the free-text ask() path is live,
+  wrapped in try/except with cached fallback.
+
+
+
 ## Demo (week 8 / Streamlit)
 
 - Demo document: `demo/` CMA ministerial letter (out-of-distribution on

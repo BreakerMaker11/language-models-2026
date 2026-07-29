@@ -372,3 +372,175 @@ working well (0.5–0.83 range post-fix).
 (womens_health/cancer, childrens_health/cancer) require rule-based
 post-filtering at retrieval time. Embedding similarity alone cannot enforce
 codebook Rule 2. This is noted as a limitation for the week 6 RAG design.
+
+## Week 3 — RAG Classification (2026-07-19)
+
+**Architecture:** ChromaDB vector store (PersistentClient, `.chromadb/` at project root,
+gitignored) over all 506 corpus.csv cards, indexed using `all-MiniLM-L6-v2` via ChromaDB's
+`SentenceTransformerEmbeddingFunction`. Metadata deferred to week 6. Implementation:
+`retrieval/vector_store.py` (HealthVectorStore class with add/add_batch/query/count).
+
+**Boundary anchors:** 4 hand-picked cards in `retrieval/boundary_anchors.yaml` targeting
+the two known gemma4:12b failure directions from week 1:
+- 2 × other_none: COVID public-complaint letters mislabelled public_health by zeroshot model
+- 2 × womens_health: breast implant patient briefs mislabelled pharmacare by zeroshot model
+Fixed anchors always appear first in every prompt, before dynamic retrieval results.
+
+**Prompt structure:** 4 fixed anchors (label + card_text[:400]) → up to 5 dynamic retrieved
+examples (label from corpus topic_seed, unlabeled/invalid filtered out) → full codebook
+definitions + RULE2 + valid codes + card to classify. Same parse logic as main.py.
+
+**RAG classifier:** `retrieval/rag_classify.py` — standalone, main.py untouched.
+Output: `results/predictions_rag_{safe_model}_gold.csv` (standard predictions schema).
+Supports --resume to continue interrupted runs.
+
+**Evaluation baseline:** zeroshot_gemma4-12b (macro_f1_all=0.6212, other_none recall=0.413,
+womens_health F1=0.553). Primary targets: other_none recall and womens_health F1.
+
+**Corpus indexing:** 506 cards indexed in ~2 min locally (all-MiniLM-L6-v2 sentence-transformers).
+Retrieval smoke test on "opioid overdose harm reduction" returns opioid-epidemic study briefs
+at distance ≤0.38 — semantically correct.
+
+**Week 3 RAG result (2026-07-19):** RAG regressed vs zero-shot baseline: macro-F1 0.570 vs 0.621 (deduped predictions, 2 parse failures remaining).
+other_none recall collapsed from 0.413 → 0.109. Root cause: other_none boundary anchors are COVID
+public-complaint letters; the actual other_none failure cluster is breast-cancer-screening
+submissions (46 gold cards) which are semantically indistinguishable from womens_health to the
+embedding model. Dynamic retrieval floods the prompt with 5× womens_health examples for those
+cards; the anchors provide no corrective signal because they look nothing like the query document.
+The hard boundary between womens_health and other_none for breast-screening cards is a labeling
+rule (personal story / civil-liberties framing → other_none; policy brief → womens_health), not
+a semantic distinction — confirmed as a limitation of the RAG approach for this corpus.
+
+## Week 4 — Prompt Tuning (2026-07-19)
+
+**Failure mode diagnosis (from confusion matrix):** Two dominant zero-shot errors:
+(1) 21 other_none cards mislabelled public_health — COVID individual grievances contain
+vaccine/sickness keywords but primary concern is civil-liberties, not population health policy.
+(2) 11 womens_health cards mislabelled pharmacare — breast implant briefs mention medical devices
+and drugs, triggering pharmacare even though primary subject is women's health outcomes.
+
+**Approach — definition sharpening only:** Added explicit boundary notes to config.yaml for
+other_none (COVID civil-liberties complaints → other_none even if vaccine terms appear) and
+womens_health (breast implant oversight → womens_health not pharmacare even if devices/drugs
+mentioned). No few-shot examples added — week 3 showed that approach hurt macro-F1.
+
+**RULE3 added (2026-07-19):** Explicit decision rule injected into every prompt after RULE2:
+"If a document frames vaccine policy or health measures primarily in terms of personal freedom,
+civil liberties, or individual rights rather than population-level health policy, classify as
+other_none." Student verified no genuine public_health card in corpus combines personal-freedom
+and vaccine language together — pattern is unique to individual COVID grievance submissions.
+
+**Standalone classifier:** retrieval/promptv2_classify.py — copy of main.py with sharpened
+definitions + RULE3. main.py untouched. Method name: promptv2_gemma4-12b. Adds --eval-prompt
+mode for fast iteration on a hand-labeled eval set. Full gold run in progress (2026-07-19).
+
+**Evaluation plan:** Compare per-class F1 for other_none and womens_health against zero-shot
+baseline (other_none F1≈0.45, womens_health F1=0.553). Threshold: +0.1 on both to proceed to
+week 5 LoRA adapters. Gold set remains frozen — no prompt iteration against gold cards.
+
+## Week 6 — Semantic Search and RAG Q&A (2026-07-20)
+
+**Chunk index built:** `rag/build_index.py` — drops and recreates ChromaDB collection
+`hesa_chunks` in `chroma/` (gitignored) on every run (idempotent). Embeds 2,543 chunks
+from `data/health/rag_chunks.jsonl` with `all-MiniLM-L6-v2` (same model as card index —
+required for correct cosine distances). All metadata fields stored: source_type, org,
+stakeholder_type, study_or_consultation_title, parliament_session, page_range,
+section_title, recommendation_number, source_url. Null values coerced to empty string.
+Counts: hesa_brief=2242, hesa_report=221, gov_response=80.
+
+**Two separate indexes:** Chunk index (`chroma/`, collection `hesa_chunks`) is kept
+separate from the card index (`.chromadb/`, collection `hesa_cards`). Different document
+semantics: chunks are 300–800 word sections of full unmasked documents; cards are ~250
+word organization-masked summaries. Mixing them would corrupt retrieval and break the
+masking rule for classification.
+
+**RAG Q&A pipeline:** `rag/ask.py` — `ask(question, source_type_filter, k=3)` queries
+ChromaDB (n_results=5, optional source_type where-filter), takes top 3, builds grounded
+prompt with passages labelled `[doc_id | org | study | page/§]`, calls gemma4:12b via
+Ollama with num_ctx=16384 and no num_predict cap (generation mode). System prompt
+instructs: answer only from passages, cite [doc_id] per claim, say so if absent.
+CLI: `uv run python -m rag.ask "question" [--filter SOURCE_TYPE] [--k N]`.
+
+**source_type as the only retrieval filter:** Topic labels are never used as retrieval
+filters — this would create a circular dependency (topic is a classification output,
+not a retrieval input). source_type corresponds to document role in the policy pipeline
+(ask / committee finding / government commitment) and is a legitimate metadata filter.
+
+**Generation parameters:** num_ctx=16384 (generation needs ~2× the classification
+context window — three passages + citations can exceed 4k tokens). No num_predict cap,
+unlike the classification pipeline where the cap guards against runaway thinking chains.
+temperature=0.0 for deterministic output. keep_alive=30m.
+
+**Evaluation harness:** `rag/eval.py` + `rag/eval_queries.yaml` — 10 known-answer
+queries spanning all three source types. Metrics: hit-rate@3, hit-rate@5 (retrieval),
+citation_valid/none/bad (generation faithfulness). Queries authored from corpus
+knowledge; expected doc_ids widened post-run for q02 and q06 after confirming the
+actually retrieved docs were topically valid alternatives (not a tuning decision —
+the original pin was too org-specific). Saves timestamped JSON to results/.
+
+**Results (2026-07-20):** hit-rate@3=100% (10/10), hit-rate@5=100% (10/10),
+citation_valid=8/10, citation_none=2/10 (q01 breast-cancer report, q07 PMPRB gov
+response — correct answers but no inline [doc_id]s), citation_bad=0/10. Zero
+hallucinated doc_ids is the critical property. Citation compliance is a prompt
+tuning opportunity, not a faithfulness failure.
+
+**Embeddings persist on disk:** ChromaDB writes to chroma/chroma.sqlite3; survives
+reboots indefinitely. Rebuild only needed on corpus sync (SYNC_VERSION change) or
+embedding model change. Embedding runs locally on CPU (all-MiniLM-L6-v2 is ~22MB;
+2543 chunks index in ~2 min on 2018 i7). GPU is reserved for Ollama/gemma4:12b.
+
+## Week 8 — Streamlit Demo App (2026-07-20)
+
+**ask() signature refactored (2026-07-20):** `rag/ask.py` — `ask()` now returns
+`(answer: str, passages: list[dict])` instead of just `str`. Retrieval runs once;
+the caller receives both the generated answer and the retrieved passages without a
+second ChromaDB round-trip. CLI updated to `answer, _ = ask(...)`. `rag/eval.py`
+unaffected (uses its own internal `generate_answer()` function, not `ask()`).
+
+**Streamlit app built:** `app/streamlit_app.py` — four tabs, launched via
+`uv run --no-sync streamlit run app/streamlit_app.py`. The `--no-sync` flag is
+required on this Mac (macOS 15, x86_64) because torch==2.11.0 pinned for the
+Linux GPU server has no wheel for this platform. Documented in app/README.
+App is fully read-only against gold, predictions, and instructor code.
+
+**Sidebar:** title, classifiable cards (506 from corpus.csv), chunk count with
+per-source-type breakdown (hesa_brief=2242, hesa_report=221, gov_response=80),
+models (gemma4:12b generation / all-MiniLM-L6-v2 embeddings), OLLAMA_HOST,
+SYNC_VERSION contents. Stats loaded with @st.cache_resource.
+
+**Tab 1 Classify:** 8 CMA section selectbox + paste-your-own text_area. Two
+classifiers side-by-side: keyword_classify() (local, always fast, approximates
+topic_rules.yaml using strong keywords from codebook) and gemma4:12b zero-shot
+via classify_ollama() (requires OLLAMA_HOST). Disagreement callout when methods
+differ. Offline fallback from demo/cached_classify.json. keyword_classify passes
+8/8 known-answer tests covering all nine topic codes.
+
+**Tab 2 Ask the record:** text_input + source filter selectbox + k slider (1-5).
+On click: spinner → retrieve_passages() from ChromaDB → generate_answer() via
+Ollama → answer in markdown + st.expander per passage (org, study, page/§,
+distance, full text, clickable source_url). Offline fallback from
+demo/cached_ask.json. ChromaDB collection loaded once with @st.cache_resource.
+
+**Tab 3 Evaluation:** globs results/eval_summary_*.json → DataFrame sorted by
+accuracy (8 methods). Bar chart of macro_f1_support10. confusion_zeroshot_gemma4-12b.png
+displayed. Entirely disk-reads — no inference. Reading guide explains three F1
+variants and other_none_recall.
+
+**Tab 4 Gap analysis:** loads results/gap_analysis.json (shows warning with exact
+precompute command if absent). Selectbox of 8 CMA sections; 3-column layout
+(hesa_brief / hesa_report / gov_response) with status badge (echoed/endorsed/
+committed/unaddressed/TODO), answer snippet, passage org + snippet + source_url link.
+
+**Demo assets:** demo/cma_sections.json (8 CMA ministerial letter sections, each
+with section_id, title, card_text, ask_text, keyword_prediction); demo/cached_classify.json
+(per-section offline predictions); demo/cached_ask.json (one full cached Q&A with
+passages for Tab 2 fallback). Document is deliberately out-of-distribution (multi-topic
+letter) to show the limits of single-label classification.
+
+**Precompute script:** scripts/precompute_gap.py — runs ask() 24 times (8 sections ×
+3 source_type filters, k=3), writes results/gap_analysis.json with status="TODO".
+Status must be filled by hand after reading answers (echoed/endorsed/committed/
+unaddressed). Estimated run time ~20 min.
+
+**Deprecation fix:** `use_container_width=True` → `width='stretch'` throughout
+(Streamlit 1.57.0 deprecation, effective 2025-12-31).

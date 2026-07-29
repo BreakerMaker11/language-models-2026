@@ -1,0 +1,59 @@
+{
+  "_note": "Offline fallback predictions for Tab 1 Classify. Shown when Ollama is unreachable.",
+  "s1": {
+    "section_id": "s1",
+    "title": "Health Workforce Crisis",
+    "keyword_prediction": "workforce",
+    "gemma4_prediction": "workforce",
+    "gemma4_elapsed_s": 18.4
+  },
+  "s2": {
+    "section_id": "s2",
+    "title": "Universal Pharmacare",
+    "keyword_prediction": "pharmacare",
+    "gemma4_prediction": "pharmacare",
+    "gemma4_elapsed_s": 15.2
+  },
+  "s3": {
+    "section_id": "s3",
+    "title": "Mental Health Parity",
+    "keyword_prediction": "mental_health",
+    "gemma4_prediction": "mental_health",
+    "gemma4_elapsed_s": 17.8
+  },
+  "s4": {
+    "section_id": "s4",
+    "title": "Indigenous Health Equity",
+    "keyword_prediction": "indigenous_health",
+    "gemma4_prediction": "indigenous_health",
+    "gemma4_elapsed_s": 16.1
+  },
+  "s5": {
+    "section_id": "s5",
+    "title": "Cancer Screening Guidelines",
+    "keyword_prediction": "womens_health",
+    "gemma4_prediction": "womens_health",
+    "gemma4_elapsed_s": 19.3
+  },
+  "s6": {
+    "section_id": "s6",
+    "title": "Women's Health Research",
+    "keyword_prediction": "womens_health",
+    "gemma4_prediction": "womens_health",
+    "gemma4_elapsed_s": 17.0
+  },
+  "s7": {
+    "section_id": "s7",
+    "title": "Antimicrobial Resistance",
+    "keyword_prediction": "public_health",
+    "gemma4_prediction": "public_health",
+    "gemma4_elapsed_s": 16.5
+  },
+  "s8": {
+    "section_id": "s8",
+    "title": "Health System Sustainability",
+    "keyword_prediction": "workforce",
+    "gemma4_prediction": "workforce",
+    "gemma4_elapsed_s": 18.9
+  }
+}
