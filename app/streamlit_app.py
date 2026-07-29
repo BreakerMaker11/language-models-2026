@@ -304,7 +304,7 @@ def classify_with_model(card_text: str, cfg: dict, model: str, api_key: str | No
 # ── RAG retrieval (direct, no Ollama) ────────────────────────────────────────
 
 def retrieve_passages(col, question: str, source_type_filter: str | None, k: int, org_filter: str | None = None) -> list[dict]:
-    kwargs = dict(query_texts=[question], n_results=max(k, 10),
+    kwargs = dict(query_texts=[question], n_results=max(k, 20),
                   include=["metadatas", "documents", "distances"])
     src = source_type_filter if source_type_filter and source_type_filter != "All" else None
     if src and org_filter:
@@ -537,7 +537,7 @@ def render_tab_ask(model: str = "gemma2:2b", api_key: str | None = None):
             help="Restrict retrieval to a specific organization. Type to search.",
         )
     with col3:
-        k = st.slider("Passages (k)", min_value=1, max_value=10, value=3)
+        k = st.slider("Reference documents (k)", min_value=1, max_value=20, value=3)
 
     source_filter = None if filter_display == "All" else filter_display
     org_filter = None if org_display == "(All orgs)" else org_display
