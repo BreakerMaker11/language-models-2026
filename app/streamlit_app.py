@@ -247,14 +247,16 @@ def get_google_api_key() -> str | None:
 
 
 def _call_gemini(prompt: str, system: str, api_key: str, model: str = "gemini-3.6-flash") -> str:
-    import google.generativeai as genai
-    genai.configure(api_key=api_key)
-    m = genai.GenerativeModel(model_name=model, system_instruction=system)
-    resp = m.generate_content(
-        prompt,
-        generation_config=genai.types.GenerationConfig(temperature=0.0),
-    )
-    return resp.text.strip()
+    import requests
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+    payload = {
+        "system_instruction": {"parts": [{"text": system}]},
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"temperature": 0.0},
+    }
+    resp = requests.post(url, params={"key": api_key}, json=payload, timeout=60)
+    resp.raise_for_status()
+    return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
 
 
 # ── Classify via Ollama or Gemini ─────────────────────────────────────────────
