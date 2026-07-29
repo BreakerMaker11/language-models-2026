@@ -247,16 +247,12 @@ def get_google_api_key() -> str | None:
 
 
 def _call_gemini(prompt: str, system: str, api_key: str, model: str = "gemini-3.6-flash") -> str:
-    from google import genai
-    from google.genai import types
-    client = genai.Client(api_key=api_key)
-    resp = client.models.generate_content(
-        model=model,
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            system_instruction=system,
-            temperature=0.0,
-        ),
+    import google.generativeai as genai
+    genai.configure(api_key=api_key)
+    m = genai.GenerativeModel(model_name=model, system_instruction=system)
+    resp = m.generate_content(
+        prompt,
+        generation_config=genai.types.GenerationConfig(temperature=0.0),
     )
     return resp.text.strip()
 
