@@ -2,7 +2,7 @@
 .venv
 __pycache__
 .chromadb/
-chroma/
+# chroma/ — index is committed so Streamlit Cloud can serve live retrieval
 
 # Secrets
 .env
