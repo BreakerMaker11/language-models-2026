@@ -69,6 +69,7 @@ def _build_prompt(question: str, passages: list[dict]) -> str:
 def ask(
     question: str,
     source_type_filter: str | None = None,
+    org_filter: str | None = None,
     k: int = 3,
 ) -> tuple[str, list[dict]]:
     """
@@ -77,6 +78,7 @@ def ask(
     Args:
         question: Natural language question.
         source_type_filter: One of 'hesa_brief', 'hesa_report', 'gov_response', or None.
+        org_filter: Exact org string to restrict retrieval to, or None.
         k: Number of passages to include in the prompt (top-k of n_results=5).
 
     Returns:
@@ -90,9 +92,20 @@ def ask(
 
     col = _get_collection()
 
-    query_kwargs = dict(query_texts=[question], n_results=5)
-    if source_type_filter:
-        query_kwargs["where"] = {"source_type": {"$eq": source_type_filter}}
+    where: dict | None = None
+    if source_type_filter and org_filter:
+        where = {"$and": [
+            {"source_type": {"$eq": source_type_filter}},
+            {"org": {"$eq": org_filter}},
+        ]}
+    elif source_type_filter:
+        where = {"source_type": {"$eq": source_type_filter}}
+    elif org_filter:
+        where = {"org": {"$eq": org_filter}}
+
+    query_kwargs: dict = dict(query_texts=[question], n_results=5)
+    if where:
+        query_kwargs["where"] = where
 
     results = col.query(**query_kwargs)
 
@@ -147,6 +160,12 @@ def main() -> None:
         help="Restrict retrieval to this source type",
     )
     parser.add_argument(
+        "--org",
+        dest="org_filter",
+        default=None,
+        help="Restrict retrieval to this exact org string",
+    )
+    parser.add_argument(
         "--k",
         type=int,
         default=3,
@@ -162,31 +181,22 @@ def main() -> None:
             file=sys.stderr,
         )
 
-    col = _get_collection()
-    query_kwargs = dict(query_texts=[args.question], n_results=5)
-    if args.source_type_filter:
-        query_kwargs["where"] = {"source_type": {"$eq": args.source_type_filter}}
-
-    results = col.query(**query_kwargs)
-    ids = results["ids"][0]
-    documents = results["documents"][0]
-    metadatas = results["metadatas"][0]
-    distances = results["distances"][0]
-
-    passages = [
-        {"doc_id": ids[i], "text": documents[i], "metadata": metadatas[i], "distance": distances[i]}
-        for i in range(min(args.k, len(ids)))
-    ]
+    answer, passages = ask(
+        args.question,
+        source_type_filter=args.source_type_filter,
+        org_filter=args.org_filter,
+        k=args.k,
+    )
 
     _print_passages(passages)
 
     filter_label = args.source_type_filter or "all"
+    org_label = args.org_filter or "all orgs"
     print(f"\n{'─'*60}")
     print(f"Question: {args.question}")
-    print(f"Filter:   {filter_label}  |  k={args.k}  |  model={GENERATION_MODEL}")
+    print(f"Filter:   {filter_label}  |  org: {org_label}  |  k={args.k}  |  model={GENERATION_MODEL}")
     print(f"{'─'*60}\n")
 
-    answer, _ = ask(args.question, source_type_filter=args.source_type_filter, k=args.k)
     print("Answer:")
     print(answer)
     print(f"\n{'─'*60}")

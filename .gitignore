@@ -7,3 +7,4 @@ chroma/
 # Secrets
 .env
 .env.local
+.streamlit/secrets.toml

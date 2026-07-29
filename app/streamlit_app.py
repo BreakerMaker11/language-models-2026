@@ -115,6 +115,21 @@ def load_chunk_count():
 
 
 @st.cache_resource
+def load_distinct_orgs() -> list[str]:
+    try:
+        import chromadb
+        from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
+        client = chromadb.PersistentClient(path=str(CHROMA_DIR))
+        ef = SentenceTransformerEmbeddingFunction("all-MiniLM-L6-v2")
+        col = client.get_collection("hesa_chunks", embedding_function=ef)
+        result = col.get(include=["metadatas"])
+        orgs = sorted({m.get("org", "") for m in result["metadatas"] if m.get("org")})
+        return orgs
+    except Exception:
+        return []
+
+
+@st.cache_resource
 def get_chroma_collection():
     import chromadb
     from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
@@ -201,35 +216,87 @@ def keyword_classify(text: str) -> str:
     return "other_none"
 
 
-# ── Classify via Ollama ───────────────────────────────────────────────────────
+# ── Model constants ───────────────────────────────────────────────────────────
 
-def classify_ollama(card_text: str, cfg: dict) -> dict:
-    """Run gemma2:2b zero-shot classifier. Returns {prediction, elapsed_s}."""
-    import ollama
+MODEL_OPTIONS = {
+    "gemma2:2b (local)":            "gemma2:2b",
+    "gemma4:12b (local)":           "gemma4:12b",
+    "gemini-3.6-flash (Google AI)": "gemini-3.6-flash",
+}
+GEMINI_MODELS = {"gemini-3.6-flash"}
+
+CLASSIFY_SYSTEM = (
+    "You are a document classifier for Canadian parliamentary health-policy briefs. "
+    "Return ONLY the single topic code that best fits the document. "
+    "Do not explain your answer."
+)
+
+RAG_SYSTEM = (
+    "You are a research assistant specialising in Canadian parliamentary "
+    "health-policy documents. Answer only from the provided passages. "
+    "Cite [doc_id] after every claim that draws from a passage. "
+    "If the passages do not contain enough information to answer, say so explicitly."
+)
+
+
+def get_google_api_key() -> str | None:
+    try:
+        return st.secrets["GOOGLE_API_KEY"]
+    except Exception:
+        return os.environ.get("GOOGLE_API_KEY")
+
+
+def _call_gemini(prompt: str, system: str, api_key: str, model: str = "gemini-3.6-flash") -> str:
+    from google import genai
+    from google.genai import types
+    client = genai.Client(api_key=api_key)
+    resp = client.models.generate_content(
+        model=model,
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            system_instruction=system,
+            temperature=0.0,
+        ),
+    )
+    return resp.text.strip()
+
+
+# ── Classify via Ollama or Gemini ─────────────────────────────────────────────
+
+def classify_with_model(card_text: str, cfg: dict, model: str, api_key: str | None = None) -> dict:
+    """Run zero-shot classifier. Returns {prediction, elapsed_s}."""
     from retrieval.promptv2_classify import (
         build_prompt, health_categories, health_model,
         SYSTEM, VALID_CODES as VC,
     )
-    model, temperature, num_ctx, ollama_options = health_model(cfg)
     categories = health_categories(cfg)
     prompt = build_prompt(card_text, categories)
 
     t0 = time.perf_counter()
-    resp = ollama.generate(
-        model=model,
-        prompt=prompt,
-        system=SYSTEM,
-        options={"temperature": temperature, "num_ctx": num_ctx, **ollama_options},
-        keep_alive="30m",
-    )
+
+    if model in GEMINI_MODELS:
+        if not api_key:
+            raise RuntimeError("GOOGLE_API_KEY not set — add it to .streamlit/secrets.toml")
+        raw_response = _call_gemini(prompt, SYSTEM, api_key, model=model)
+    else:
+        import ollama
+        _, temperature, num_ctx, ollama_options = health_model(cfg, model_override=model)
+        resp = ollama.generate(
+            model=model,
+            prompt=prompt,
+            system=SYSTEM,
+            options={"temperature": temperature, "num_ctx": num_ctx, **ollama_options},
+            keep_alive="30m",
+        )
+        raw_response = resp.response
+
     elapsed = time.perf_counter() - t0
 
-    raw = resp.response.strip().lower().strip('."\'`* ')
+    raw = raw_response.strip().lower().strip('."\'`* ')
     prediction = raw if raw in VC else None
-
     if prediction is None:
         for code in VC:
-            if code in resp.response.lower():
+            if code in raw_response.lower():
                 prediction = code
                 break
 
@@ -238,11 +305,16 @@ def classify_ollama(card_text: str, cfg: dict) -> dict:
 
 # ── RAG retrieval (direct, no Ollama) ────────────────────────────────────────
 
-def retrieve_passages(col, question: str, source_type_filter: str | None, k: int) -> list[dict]:
-    kwargs = dict(query_texts=[question], n_results=max(k, 5),
+def retrieve_passages(col, question: str, source_type_filter: str | None, k: int, org_filter: str | None = None) -> list[dict]:
+    kwargs = dict(query_texts=[question], n_results=max(k, 10),
                   include=["metadatas", "documents", "distances"])
-    if source_type_filter and source_type_filter != "All":
-        kwargs["where"] = {"source_type": {"$eq": source_type_filter}}
+    src = source_type_filter if source_type_filter and source_type_filter != "All" else None
+    if src and org_filter:
+        kwargs["where"] = {"$and": [{"source_type": {"$eq": src}}, {"org": {"$eq": org_filter}}]}
+    elif src:
+        kwargs["where"] = {"source_type": {"$eq": src}}
+    elif org_filter:
+        kwargs["where"] = {"org": {"$eq": org_filter}}
     res = col.query(**kwargs)
     return [
         {
@@ -255,15 +327,7 @@ def retrieve_passages(col, question: str, source_type_filter: str | None, k: int
     ]
 
 
-def generate_answer(passages: list[dict], question: str) -> str:
-    import ollama
-
-    SYSTEM_PROMPT = (
-        "You are a research assistant specialising in Canadian parliamentary "
-        "health-policy documents. Answer only from the provided passages. "
-        "Cite [doc_id] after every claim that draws from a passage. "
-        "If the passages do not contain enough information to answer, say so explicitly."
-    )
+def generate_answer(passages: list[dict], question: str, model: str = "gemma2:2b", api_key: str | None = None) -> str:
     lines = ["Here are the retrieved passages:\n"]
     for p in passages:
         m = p["metadata"]
@@ -280,10 +344,16 @@ def generate_answer(passages: list[dict], question: str) -> str:
                  "If the passages do not contain the answer, say so.")
     prompt = "\n".join(lines)
 
+    if model in GEMINI_MODELS:
+        if not api_key:
+            raise RuntimeError("GOOGLE_API_KEY not set — add it to .streamlit/secrets.toml")
+        return _call_gemini(prompt, RAG_SYSTEM, api_key, model=model)
+
+    import ollama
     resp = ollama.generate(
-        model="gemma2:2b",
+        model=model,
         prompt=prompt,
-        system=SYSTEM_PROMPT,
+        system=RAG_SYSTEM,
         options={"num_ctx": 8192, "temperature": 0.0},
         keep_alive="30m",
     )
@@ -304,7 +374,8 @@ def status_badge(status: str) -> str:
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 
-def render_sidebar():
+def render_sidebar() -> tuple[str, str | None]:
+    """Render sidebar. Returns (selected_model_id, google_api_key)."""
     with st.sidebar:
         st.title("HESA Policy Explorer")
         st.caption("Canadian parliamentary health-policy briefs · Standing Committee on Health")
@@ -325,10 +396,28 @@ def render_sidebar():
 
         st.divider()
         st.subheader("Models")
-        st.write("**Generation:** gemma2:2b (Ollama)")
+
+        selected_label = st.selectbox(
+            "Generation model",
+            list(MODEL_OPTIONS.keys()),
+            index=0,
+            help="Local models require OLLAMA_HOST. Gemini requires GOOGLE_API_KEY in secrets.",
+        )
+        selected_model = MODEL_OPTIONS[selected_label]
+
+        api_key: str | None = None
+        if selected_model in GEMINI_MODELS:
+            api_key = get_google_api_key()
+            if api_key and api_key != "your-google-ai-studio-key-here":
+                st.caption("GOOGLE_API_KEY: set")
+            else:
+                st.warning("GOOGLE_API_KEY not set — add it to `.streamlit/secrets.toml`")
+                api_key = None
+        else:
+            ollama_host = os.environ.get("OLLAMA_HOST", "not set")
+            st.caption(f"OLLAMA_HOST: `{ollama_host}`")
+
         st.write("**Embeddings:** all-MiniLM-L6-v2 (local CPU)")
-        ollama_host = os.environ.get("OLLAMA_HOST", "not set")
-        st.caption(f"OLLAMA_HOST: `{ollama_host}`")
 
         st.divider()
         st.subheader("Corpus version")
@@ -337,15 +426,17 @@ def render_sidebar():
         else:
             st.caption("SYNC_VERSION not found in data/health/")
 
+    return selected_model, api_key
+
 
 # ── Tab 1: Classify ───────────────────────────────────────────────────────────
 
-def render_tab_classify():
+def render_tab_classify(model: str = "gemma2:2b", api_key: str | None = None):
     st.header("Classify a document")
     st.caption(
         "Select a CMA section or paste your own text. "
         "Two classifiers run in parallel: keyword rules (fast, no GPU) and "
-        "gemma2:2b zero-shot (requires OLLAMA_HOST)."
+        f"{model} zero-shot."
     )
 
     sections_data = load_cma_sections()
@@ -373,21 +464,26 @@ def render_tab_classify():
         # ── Keyword prediction (always fast) ──────────────────────────────────
         kw_pred = keyword_classify(card_text)
 
-        # ── Gemma4 prediction ─────────────────────────────────────────────────
+        # ── LLM prediction ────────────────────────────────────────────────────
         cfg = load_config()
         cached = load_cached_classify()
-        gemma4_result = None
+        llm_result = None
         offline = False
 
         try:
-            with st.spinner("Running gemma2:2b…"):
-                gemma4_result = classify_ollama(card_text, cfg)
+            with st.spinner(f"Running {model}…"):
+                llm_result = classify_with_model(card_text, cfg, model, api_key)
         except Exception as e:
             offline = True
+            st.error(f"**{type(e).__name__}:** {e}")
             if section_id and section_id in cached:
-                gemma4_result = cached[section_id]
+                raw = cached[section_id]
+                llm_result = {
+                    "prediction": raw.get("prediction") or raw.get("gemma4_prediction", "PARSE_FAIL"),
+                    "elapsed_s":  raw.get("elapsed_s")  or raw.get("gemma4_elapsed_s", 0.0),
+                }
             else:
-                gemma4_result = {"prediction": "PARSE_FAIL", "elapsed_s": 0.0}
+                llm_result = {"prediction": "PARSE_FAIL", "elapsed_s": 0.0}
 
         # ── Display ───────────────────────────────────────────────────────────
         col1, col2 = st.columns(2)
@@ -397,28 +493,28 @@ def render_tab_classify():
             st.caption("Simplified keyword matcher (approximates topic_rules.yaml)")
 
         with col2:
-            st.subheader("gemma2:2b zero-shot")
-            pred = gemma4_result["prediction"]
+            st.subheader(f"{model} zero-shot")
+            pred = llm_result["prediction"]
             st.markdown(label_badge(pred), unsafe_allow_html=True)
             if offline:
-                st.caption(f"⚠️ Offline result (Ollama unreachable) — cached prediction")
+                st.caption("⚠️ Offline result — model unreachable, showing cached prediction")
             else:
-                st.caption(f"Elapsed: {gemma4_result['elapsed_s']:.1f}s")
+                st.caption(f"Elapsed: {llm_result['elapsed_s']:.1f}s")
 
-        if kw_pred != gemma4_result["prediction"]:
+        if kw_pred != llm_result["prediction"]:
             st.info(
-                f"Methods disagree: keyword→**{kw_pred}**, gemma4→**{gemma4_result['prediction']}**. "
+                f"Methods disagree: keyword→**{kw_pred}**, {model}→**{llm_result['prediction']}**. "
                 "This often happens on multi-topic documents or when keyword coverage is sparse."
             )
 
 
 # ── Tab 2: Ask the record ─────────────────────────────────────────────────────
 
-def render_tab_ask():
+def render_tab_ask(model: str = "gemma2:2b", api_key: str | None = None):
     st.header("Ask the record")
     st.caption(
         "Ask a policy question. The app retrieves relevant passages from the HESA corpus "
-        "and asks gemma2:2b to answer using only those passages, with [doc_id] citations."
+        f"and asks {model} to answer using only those passages, with [doc_id] citations."
     )
 
     question = st.text_input(
@@ -426,7 +522,7 @@ def render_tab_ask():
         placeholder="e.g. What did the committee recommend on breast cancer screening?",
     )
 
-    col1, col2 = st.columns([2, 1])
+    col1, col2, col3 = st.columns([2, 2, 1])
     with col1:
         filter_display = st.selectbox(
             "Source filter",
@@ -435,9 +531,18 @@ def render_tab_ask():
             help="Restrict retrieval to one document role in the policy pipeline.",
         )
     with col2:
-        k = st.slider("Passages (k)", min_value=1, max_value=5, value=3)
+        all_orgs = load_distinct_orgs()
+        org_display = st.selectbox(
+            "Org filter",
+            ["(All orgs)"] + all_orgs,
+            index=0,
+            help="Restrict retrieval to a specific organization. Type to search.",
+        )
+    with col3:
+        k = st.slider("Passages (k)", min_value=1, max_value=10, value=3)
 
     source_filter = None if filter_display == "All" else filter_display
+    org_filter = None if org_display == "(All orgs)" else org_display
 
     if st.button("Ask", type="primary") and question.strip():
         cached_ask = load_cached_ask()
@@ -448,18 +553,19 @@ def render_tab_ask():
         try:
             col = get_chroma_collection()
             with st.spinner("Retrieving passages…"):
-                passages = retrieve_passages(col, question, source_filter, k)
+                passages = retrieve_passages(col, question, source_filter, k, org_filter=org_filter)
 
-            with st.spinner("Generating answer with gemma2:2b…"):
-                answer = generate_answer(passages, question)
+            with st.spinner(f"Generating answer with {model}…"):
+                answer = generate_answer(passages, question, model=model, api_key=api_key)
 
         except Exception as e:
             offline = True
             answer = cached_ask["answer"]
             passages = cached_ask["passages"]
+            st.error(f"**{type(e).__name__}:** {e}")
 
         if offline:
-            st.warning("⚠️ Offline result — Ollama unreachable. Showing cached example answer.")
+            st.warning("⚠️ Showing cached example answer (model call failed — see error above).")
 
         st.subheader("Answer")
         st.markdown(answer)
@@ -642,7 +748,7 @@ def main():
         layout="wide",
     )
 
-    render_sidebar()
+    selected_model, api_key = render_sidebar()
 
     tab1, tab2, tab3, tab4 = st.tabs([
         "Classify",
@@ -652,9 +758,9 @@ def main():
     ])
 
     with tab1:
-        render_tab_classify()
+        render_tab_classify(model=selected_model, api_key=api_key)
     with tab2:
-        render_tab_ask()
+        render_tab_ask(model=selected_model, api_key=api_key)
     with tab3:
         render_tab_eval()
     with tab4:

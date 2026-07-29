@@ -11,10 +11,40 @@ The `--no-sync` flag is required on this Mac. See "torch wheel issue" below.
 
 Tabs
 ----
-1. Classify       — Select a CMA section or paste text; keyword rules vs gemma4:12b
-2. Ask the record — RAG Q&A over the HESA corpus with source-type filtering
+1. Classify       — Select a CMA section or paste text; keyword rules vs LLM zero-shot
+2. Ask the record — RAG Q&A over the HESA corpus with source-type, org, and k filters
 3. Evaluation     — Pre-computed classifier results table + confusion matrix
 4. Gap analysis   — CMA sections cross-referenced against briefs/reports/responses
+
+
+Model selector
+--------------
+The sidebar exposes a generation model dropdown:
+
+  - gemma2:2b (local)            — fast, via Ollama on OLLAMA_HOST
+  - gemma4:12b (local)           — higher quality, via Ollama on OLLAMA_HOST
+  - gemini-3.6-flash (Google AI) — Google AI Studio API; requires GOOGLE_API_KEY
+
+To use Gemini, add your API key to .streamlit/secrets.toml (local dev):
+
+    GOOGLE_API_KEY = "AIza..."
+
+On Streamlit Community Cloud, add the same key under App Settings → Secrets.
+The secrets.toml file is gitignored and must never be committed.
+
+
+Ask the record — filters
+------------------------
+Three controls narrow the retrieval:
+
+  Source filter  — restrict to one layer of the policy pipeline:
+                   hesa_brief (stakeholder asks) / hesa_report (committee findings) /
+                   gov_response (government commitments) / All
+  Org filter     — restrict to a specific organization; 442 distinct orgs available,
+                   type to search in the dropdown
+  Passages (k)   — number of chunks passed to the generation model (1–10)
+
+Source filter and org filter are combined via $and when both are set.
 
 
 Prerequisites
@@ -34,8 +64,8 @@ valid values are: echoed / endorsed / committed / unaddressed
 
 Offline fallback
 ----------------
-If OLLAMA_HOST is not set or the remote server is unreachable:
-- Tab 1 (Classify): shows a cached gemma4 prediction from demo/cached_classify.json
+If the model backend is unreachable:
+- Tab 1 (Classify): shows a cached prediction from demo/cached_classify.json
 - Tab 2 (Ask): shows a cached answer + passages from demo/cached_ask.json
 - Tabs 3 and 4 load from disk only and always work offline
 
